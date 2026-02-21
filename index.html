@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tristan Joubert — Offensive Security & Penetration Testing</title>
+<title>Tristan Joubert — Cybersecurity & Data Analytics</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -61,6 +61,7 @@
   .nav-links a { color: var(--muted); text-decoration: none; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; transition: color 0.2s; }
   .nav-links a:hover { color: var(--accent); }
 
+  /* HERO */
   .hero {
     position: relative; z-index: 1;
     max-width: 1100px; margin: 0 auto;
@@ -82,58 +83,25 @@
   .hero h1 .acc { color: var(--accent); }
   .hero h1 .hot { color: var(--hot); }
 
-  /* ─── Terminal viewport: fixed height, layout-inert ─── */
+  /* ── FIX: lock terminal to a fixed height so typing never shifts layout ── */
   .terminal-block {
-    background: var(--surface);
-    border: 1px solid var(--border);
+    background: var(--surface); border: 1px solid var(--border);
     border-left: 3px solid var(--accent);
-    padding: 16px 20px;
-    margin-bottom: 24px;
+    padding: 16px 20px; margin-bottom: 24px;
+    position: relative; min-height: 68px;
     position: relative;
+    /* Fixed dimensions — content is clipped, layout is inert */
     height: 182px;
     overflow: hidden;
   }
-
-  /* label badge */
   .terminal-block::before {
     content: '// about.txt';
     position: absolute; top: -10px; left: 16px;
     background: var(--bg); padding: 0 8px;
     font-size: 10px; color: var(--muted); letter-spacing: 1px;
-    z-index: 2;
   }
-
-  /* soft fade at top so exiting lines dissolve rather than hard-clip */
-  .terminal-block::after {
-    content: '';
-    position: absolute; top: 0; left: 0; right: 0; height: 36px;
-    background: linear-gradient(to bottom, var(--surface) 20%, transparent);
-    pointer-events: none; z-index: 1;
-  }
-
-  /* ─── Inner wrapper: this is what translateY moves ─── */
-  #terminal-inner {
-    position: absolute;
-    top: 16px; left: 20px; right: 20px;
-    /* smooth glide — cubic-bezier gives it a natural deceleration */
-    transition: transform 0.44s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    will-change: transform;
-  }
-
-  #typed-text {
-    display: block;
-    color: var(--text);
-    white-space: pre-wrap;
-    font-size: 12px;
-    line-height: 1.7;
-  }
-
-  .cursor {
-    display: inline-block; width: 8px; height: 13px;
-    background: var(--accent);
-    animation: blink 1s step-end infinite;
-    vertical-align: middle; margin-left: 2px;
-  }
+  #typed-text { color: var(--text); white-space: pre-wrap; font-size: 12px; }
+  .cursor { display: inline-block; width: 8px; height: 13px; background: var(--accent); animation: blink 1s step-end infinite; vertical-align: middle; margin-left: 2px; }
   @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
 
   .cta-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
@@ -159,6 +127,7 @@
   .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 2s ease infinite; flex-shrink: 0; }
   @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(0,229,160,0.4)} 50%{box-shadow:0 0 0 6px rgba(0,229,160,0)} }
 
+  /* About right panel */
   .about-panel { display: flex; flex-direction: column; gap: 20px; padding-top: 6px; }
   .about-bio { font-size: 13px; color: var(--text); line-height: 1.9; font-family: 'Syne', sans-serif; }
   .about-bio em { color: var(--accent); font-style: normal; }
@@ -174,6 +143,7 @@
   .focus-list li::before { content: '▸ '; color: var(--accent); }
   .fact-list li { font-size: 11px; color: var(--muted); }
 
+  /* SECTIONS */
   section { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 60px 48px; }
   .section-label {
     display: flex; align-items: center; gap: 12px;
@@ -185,6 +155,7 @@
   .divider { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 0 48px; }
   .divider hr { border: none; border-top: 1px solid var(--border); }
 
+  /* PROJECTS */
   .sub-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; }
   .sub-label.done { color: var(--accent); }
   .sub-label.wip  { color: var(--hot); margin-top: 36px; }
@@ -218,10 +189,11 @@
   .tag   { padding: 2px 8px; border: 1px solid var(--border); font-size: 9px; color: var(--muted); }
   .plink { font-size: 10px; color: var(--accent); letter-spacing: 1px; text-transform: uppercase; margin-top: 4px; }
   .plink::after { content: ' →'; }
-  .pwip  { font-size: 10px; color: var(--hot); letter-spacing: 1px; text-transform: uppercase; margin-top: 4px; }
+  .pwip  { font-size: 10px; color: var(--hot);   letter-spacing: 1px; text-transform: uppercase; margin-top: 4px; }
 
   .gh-row { display: flex; align-items: center; gap: 16px; margin-top: 20px; }
 
+  /* SKILLS */
   .skills-grid {
     display: grid; grid-template-columns: repeat(4,1fr);
     gap: 1px; background: var(--border); border: 1px solid var(--border);
@@ -233,12 +205,22 @@
   .sbar { width: 52px; height: 2px; background: var(--border); position: relative; flex-shrink: 0; }
   .sbar-fill { position: absolute; top: 0; left: 0; height: 100%; background: var(--accent); }
 
+  /* TRAINING */
   .platforms { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); }
   .plat { background: var(--surface); padding: 26px 24px; text-decoration: none; transition: background 0.2s; }
   .plat:hover { background: #111b2e; }
   .plat-name { font-family: 'Syne', sans-serif; font-weight: 700; color: var(--white); font-size: 15px; margin-bottom: 6px; }
   .plat-sub  { font-size: 11px; color: var(--muted); line-height: 1.6; }
 
+  /* EXPERIENCE */
+  .exp-list { display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); }
+  .exp-item { background: var(--surface); padding: 26px 28px; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: start; }
+  .exp-role { font-family: 'Syne', sans-serif; font-weight: 700; color: var(--white); font-size: 15px; margin-bottom: 4px; }
+  .exp-org  { font-size: 11px; color: var(--accent); margin-bottom: 10px; }
+  .exp-desc { font-size: 11px; color: var(--muted); line-height: 1.8; }
+  .exp-date { font-size: 10px; color: var(--muted); letter-spacing: 1px; white-space: nowrap; text-align: right; }
+
+  /* CONNECT */
   .connect-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); }
   .clink { background: var(--surface); display: flex; align-items: center; gap: 14px; padding: 22px 20px; text-decoration: none; color: var(--text); transition: background 0.2s; }
   .clink:hover { background: #111b2e; }
@@ -268,6 +250,7 @@
     .pgrid { grid-template-columns: 1fr; }
     .connect-grid { grid-template-columns: 1fr 1fr; }
     .platforms { grid-template-columns: 1fr; }
+    .exp-item { grid-template-columns: 1fr; }
   }
   @media (max-width: 600px) {
     nav { padding: 14px 20px; }
@@ -293,18 +276,18 @@
 </nav>
 
 <div class="hero">
+
+  <!-- LEFT -->
   <div>
     <div class="hero-eyebrow">Pretoria, South Africa &nbsp;·&nbsp; Open to Opportunities</div>
     <h1>
       <span class="gt">Tristan</span><br>
       <span class="acc">Joubert</span><br>
-      <span class="hot" style="font-size:0.52em;letter-spacing:-1px;">Offensive Security &amp; Penetration Testing</span>
+      <span class="hot" style="font-size:0.52em;letter-spacing:-1px;">Cybersecurity &amp; Data Analysis</span>
     </h1>
 
     <div class="terminal-block">
-      <div id="terminal-inner">
-        <span id="typed-text"></span><span class="cursor"></span>
-      </div>
+      <span id="typed-text"></span><span class="cursor"></span>
     </div>
 
     <div class="cta-row">
@@ -317,22 +300,24 @@
     </div>
   </div>
 
+  <!-- RIGHT: About -->
   <div class="about-panel">
     <p class="about-bio">
-      BSc IT student specialising in <em>offensive security</em> and
-      <em>penetration testing</em>. Building toward red team roles with a focus on
-      exploit development, post-exploitation tradecraft, and vulnerability research.
-      Active on TryHackMe and Hack The Box — learning by breaking things, not just reading about them.
+      BSc IT student specialising in <em>cybersecurity operations</em> and
+      <em>security analytics</em>. Building toward SOC roles with a focus on ML-driven
+      threat detection, log analysis, and security scripting. Active on TryHackMe and
+      Hack The Box — learning by doing, not just studying.
     </p>
+
     <div class="about-grid">
       <div class="about-cell">
         <div class="cell-title">Focus Areas</div>
         <ul class="focus-list">
-          <li>Penetration Testing</li>
-          <li>Vulnerability Research</li>
-          <li>Exploit Development</li>
-          <li>Post-Exploitation &amp; Pivoting</li>
-          <li>Offensive Security Tooling</li>
+          <li>Threat Detection &amp; SOC Ops</li>
+          <li>Security Analytics</li>
+          <li>Vulnerability Assessment</li>
+          <li>Anomaly Detection (ML)</li>
+          <li>Security Scripting</li>
         </ul>
       </div>
       <div class="about-cell">
@@ -347,12 +332,15 @@
       </div>
     </div>
   </div>
+
 </div>
 
 <div class="divider"><hr></div>
 
+<!-- PROJECTS -->
 <section id="projects">
   <div class="section-label"><span>02</span> Projects</div>
+
   <p class="sub-label done">Completed</p>
   <div class="pgrid">
     <a class="pcard" href="https://github.com/hexwrk/security-pre-commit-scanner" target="_blank">
@@ -377,6 +365,7 @@
       <span class="plink">View Repo</span>
     </a>
   </div>
+
   <p class="sub-label wip">In Progress</p>
   <div class="pgrid">
     <div class="pcard wip">
@@ -401,6 +390,7 @@
       <span class="pwip">In Development</span>
     </div>
   </div>
+
   <div class="gh-row">
     <a href="https://github.com/hexwrk?tab=repositories" target="_blank" class="btn btn-ghost">View All on GitHub →</a>
     <span style="font-size:11px;color:var(--muted);">3 completed · 3 in progress</span>
@@ -409,45 +399,47 @@
 
 <div class="divider"><hr></div>
 
+<!-- SKILLS -->
 <section id="skills">
   <div class="section-label"><span>03</span> Technical Stack</div>
   <div class="skills-grid">
     <div class="sg">
       <div class="sg-title">Languages</div>
-      <div class="si">Python</div>
-      <div class="si">C++</div>
-      <div class="si">Bash</div>
-      <div class="si">SQL</div>
-      <div class="si">JavaScript</div>
+      <div class="si">Python      <div class="sbar"><div class="sbar-fill" style="width:90%"></div></div></div>
+      <div class="si">C++         <div class="sbar"><div class="sbar-fill" style="width:70%"></div></div></div>
+      <div class="si">Bash        <div class="sbar"><div class="sbar-fill" style="width:65%"></div></div></div>
+      <div class="si">SQL         <div class="sbar"><div class="sbar-fill" style="width:60%"></div></div></div>
+      <div class="si">JavaScript  <div class="sbar"><div class="sbar-fill" style="width:55%"></div></div></div>
     </div>
     <div class="sg">
       <div class="sg-title">Security Tools</div>
-      <div class="si">Nmap</div>
-      <div class="si">Wireshark</div>
-      <div class="si">Metasploit</div>
-      <div class="si">Burp Suite</div>
-      <div class="si">OWASP ZAP</div>
+      <div class="si">Nmap        <div class="sbar"><div class="sbar-fill" style="width:75%"></div></div></div>
+      <div class="si">Wireshark   <div class="sbar"><div class="sbar-fill" style="width:70%"></div></div></div>
+      <div class="si">Metasploit  <div class="sbar"><div class="sbar-fill" style="width:60%"></div></div></div>
+      <div class="si">Burp Suite  <div class="sbar"><div class="sbar-fill" style="width:60%"></div></div></div>
+      <div class="si">OWASP ZAP   <div class="sbar"><div class="sbar-fill" style="width:55%"></div></div></div>
     </div>
     <div class="sg">
       <div class="sg-title">Data &amp; Analytics</div>
-      <div class="si">Pandas</div>
-      <div class="si">NumPy</div>
-      <div class="si">Matplotlib</div>
-      <div class="si">Plotly</div>
-      <div class="si">scikit-learn</div>
+      <div class="si">Pandas      <div class="sbar"><div class="sbar-fill" style="width:80%"></div></div></div>
+      <div class="si">NumPy       <div class="sbar"><div class="sbar-fill" style="width:75%"></div></div></div>
+      <div class="si">Matplotlib  <div class="sbar"><div class="sbar-fill" style="width:70%"></div></div></div>
+      <div class="si">Plotly      <div class="sbar"><div class="sbar-fill" style="width:65%"></div></div></div>
+      <div class="si">scikit-learn<div class="sbar"><div class="sbar-fill" style="width:50%"></div></div></div>
     </div>
     <div class="sg">
       <div class="sg-title">Tools &amp; Ops</div>
-      <div class="si">Git / GitHub</div>
-      <div class="si">Linux</div>
-      <div class="si">PowerShell</div>
-      <div class="si">Docker</div>
+      <div class="si">Git / GitHub <div class="sbar"><div class="sbar-fill" style="width:80%"></div></div></div>
+      <div class="si">Linux        <div class="sbar"><div class="sbar-fill" style="width:70%"></div></div></div>
+      <div class="si">PowerShell   <div class="sbar"><div class="sbar-fill" style="width:60%"></div></div></div>
+      <div class="si">Docker       <div class="sbar"><div class="sbar-fill" style="width:40%"></div></div></div>
     </div>
   </div>
 </section>
 
 <div class="divider"><hr></div>
 
+<!-- TRAINING -->
 <section id="training">
   <div class="section-label"><span>04</span> Training Platforms</div>
   <div class="platforms">
@@ -468,6 +460,7 @@
 
 <div class="divider"><hr></div>
 
+<!-- CONNECT -->
 <section id="connect">
   <div class="section-label"><span>06</span> Get In Touch</div>
   <p style="font-size:12px;color:var(--muted);max-width:520px;margin-bottom:24px;line-height:1.8;">
@@ -483,9 +476,9 @@
       <div class="cicon">&lt;/&gt;</div>
       <div><div class="cname">GitHub</div><div class="csub">github.com/hexwrk</div></div>
     </a>
-    <a class="clink" href="/cdn-cgi/l/email-protection#2357514a5057424d494c5641465157131163444e424a4f0d404c4e">
+    <a class="clink" href="mailto:tristanjoubert02@gmail.com">
       <div class="cicon">@</div>
-      <div><div class="cname">Email</div><div class="csub"><span class="__cf_email__" data-cfemail="e591978c9691848b8f8a9087809791d5d7a58288848c89cb868a88">[email&#160;protected]</span></div></div>
+      <div><div class="cname">Email</div><div class="csub">tristanjoubert02@gmail.com</div></div>
     </a>
     <a class="clink" href="https://tryhackme.com/p/Furios" target="_blank">
       <div class="cicon">⚑</div>
@@ -499,60 +492,66 @@
   <p>"Security through knowledge, safety through vigilance"</p>
 </footer>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
   const lines = [
     '> whoami',
     'tristan_joubert — BSc IT yr3 · Pretoria',
     '> skills --top',
-    'Python · C++ · Nmap · Metasploit · Burp Suite · Bash',
+    'Python · Pandas · Nmap · Wireshark · scikit-learn · Bash',
     '> cat goals.txt',
-    'red team operator · exploit dev · penetration tester',
+    'SOC analyst · security analytics · threat detection',
     '> ls platforms/',
     'TryHackMe/Furios   HackTheBox   self-directed',
     '> status',
     'OPEN — internship · part-time or full-time · remote or on-site'
   ];
 
-  // Inner usable height = terminal block height (182) minus top+bottom padding (16+16)
-  const BOX_HEIGHT = 150;
+  let li = 0, ci = 0, out = '';
+  // Max lines visible inside the fixed-height box (accounts for 12px font, 1.7 line-height)
+  const MAX_LINES = 8;
 
-  let li = 0, ci = 0, fullText = '';
-  const el    = document.getElementById('typed-text');
-  const inner = document.getElementById('terminal-inner');
+  let li = 0, ci = 0;
+  let lineBuffer = [];   // tracks complete + in-progress lines as strings
+  const el = document.getElementById('typed-text');
 
-  function nudgeScroll() {
-    const h = inner.offsetHeight;
-    if (h > BOX_HEIGHT) {
-      // Push the block upward so the bottom line (where typing is happening) stays visible.
-      // The CSS transition on #terminal-inner smoothly animates this translateY change.
-      inner.style.transform = `translateY(${BOX_HEIGHT - h}px)`;
-    }
+  function render() {
+    // Show only the last MAX_LINES entries so the box never overflows
+    el.textContent = lineBuffer.slice(-MAX_LINES).join('\n');
   }
 
   function type() {
+    if (li >= lines.length) { li = 0; ci = 0; out = ''; el.textContent = ''; setTimeout(type, 2000); return; }
     if (li >= lines.length) {
-      setTimeout(() => {
-        // Kill transition so the reset snap is instant — no ugly reverse-scroll
-        inner.style.transition = 'none';
-        inner.style.transform  = 'translateY(0)';
-        el.textContent = '';
-        li = 0; ci = 0; fullText = '';
-        // Re-enable smooth transition on the very next paint
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => { inner.style.transition = ''; });
-          setTimeout(type, 400);
-        });
-      }, 2400);
+      // Full cycle done — pause then restart clean
+      li = 0; ci = 0; lineBuffer = [];
+      render();
+      setTimeout(type, 2000);
       return;
     }
 
     const line = lines[li];
 
+    if (ci === 0) {
+      // Start a new line entry in the buffer
+      lineBuffer.push('');
+    }
+
     if (ci < line.length) {
-      fullText += line[ci++];
-      el.textContent = fullText;
-      nudgeScroll();
+      out += line[ci++]; el.textContent = out; setTimeout(type, 36);
+      // Append next character to the current (last) buffer entry
+      lineBuffer[lineBuffer.length - 1] = line.slice(0, ci + 1);
+      ci++;
+      render();
       setTimeout(type, 36);
     } else {
-      fullText += '\n';
-      el.tex
+      out += '\n'; el.textContent = out; ci = 0; li++;
+      // Line complete — move to next
+      ci = 0; li++;
+      setTimeout(type, li % 2 === 0 ? 480 : 160);
+    }
+  }
+
+  setTimeout(type, 600);
+</script>
+</body>
+</html>
