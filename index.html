@@ -83,11 +83,15 @@
   .hero h1 .acc { color: var(--accent); }
   .hero h1 .hot { color: var(--hot); }
 
+  /* ── FIX: lock terminal to a fixed height so typing never shifts layout ── */
   .terminal-block {
     background: var(--surface); border: 1px solid var(--border);
     border-left: 3px solid var(--accent);
     padding: 16px 20px; margin-bottom: 24px;
-    position: relative; min-height: 68px;
+    position: relative;
+    /* Fixed dimensions — content is clipped, layout is inert */
+    height: 182px;
+    overflow: hidden;
   }
   .terminal-block::before {
     content: '// about.txt';
@@ -501,19 +505,47 @@
     'OPEN — internship · part-time or full-time · remote or on-site'
   ];
 
-  let li = 0, ci = 0, out = '';
+  // Max lines visible inside the fixed-height box (accounts for 12px font, 1.7 line-height)
+  const MAX_LINES = 8;
+
+  let li = 0, ci = 0;
+  let lineBuffer = [];   // tracks complete + in-progress lines as strings
   const el = document.getElementById('typed-text');
 
+  function render() {
+    // Show only the last MAX_LINES entries so the box never overflows
+    el.textContent = lineBuffer.slice(-MAX_LINES).join('\n');
+  }
+
   function type() {
-    if (li >= lines.length) { li = 0; ci = 0; out = ''; el.textContent = ''; setTimeout(type, 2000); return; }
+    if (li >= lines.length) {
+      // Full cycle done — pause then restart clean
+      li = 0; ci = 0; lineBuffer = [];
+      render();
+      setTimeout(type, 2000);
+      return;
+    }
+
     const line = lines[li];
+
+    if (ci === 0) {
+      // Start a new line entry in the buffer
+      lineBuffer.push('');
+    }
+
     if (ci < line.length) {
-      out += line[ci++]; el.textContent = out; setTimeout(type, 36);
+      // Append next character to the current (last) buffer entry
+      lineBuffer[lineBuffer.length - 1] = line.slice(0, ci + 1);
+      ci++;
+      render();
+      setTimeout(type, 36);
     } else {
-      out += '\n'; el.textContent = out; ci = 0; li++;
+      // Line complete — move to next
+      ci = 0; li++;
       setTimeout(type, li % 2 === 0 ? 480 : 160);
     }
   }
+
   setTimeout(type, 600);
 </script>
 </body>
