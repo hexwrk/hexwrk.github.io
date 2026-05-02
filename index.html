@@ -13,6 +13,7 @@
     --border: #1a2540;
     --accent: #00e5a0;
     --hot: #ff3e6c;
+    --purple: #7c6af7;
     --text: #c8d4ec;
     --muted: #4a5878;
     --white: #eef2fc;
@@ -20,6 +21,29 @@
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html { scroll-behavior: smooth; }
+
+  /* ── CUSTOM CURSOR ── */
+  * { cursor: none; }
+  #cursor {
+    position: fixed; pointer-events: none; z-index: 9999;
+    width: 10px; height: 10px;
+    background: var(--accent);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.2s, height 0.2s, background 0.2s, opacity 0.2s;
+    mix-blend-mode: screen;
+  }
+  #cursor-ring {
+    position: fixed; pointer-events: none; z-index: 9998;
+    width: 32px; height: 32px;
+    border: 1px solid rgba(0,229,160,0.4);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.35s ease, height 0.35s ease, border-color 0.2s, transform 0.08s ease;
+  }
+  body:has(a:hover) #cursor { width: 14px; height: 14px; background: var(--hot); }
+  body:has(a:hover) #cursor-ring { width: 44px; height: 44px; border-color: rgba(255,62,108,0.5); }
+  body:has(.pcard:hover) #cursor { background: var(--purple); }
 
   body {
     background: var(--bg);
@@ -30,115 +54,189 @@
     overflow-x: hidden;
   }
 
+  /* ── GRID OVERLAY ── */
   body::before {
     content: '';
     position: fixed; inset: 0;
     background-image:
-      linear-gradient(rgba(0,229,160,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0,229,160,0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
+      linear-gradient(rgba(0,229,160,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,160,0.025) 1px, transparent 1px);
+    background-size: 48px 48px;
     pointer-events: none; z-index: 0;
   }
 
+  /* ── NOISE GRAIN OVERLAY ── */
   body::after {
     content: '';
     position: fixed; inset: 0;
-    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.06) 2px, rgba(0,0,0,0.06) 4px);
+    opacity: 0.045;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
     pointer-events: none; z-index: 0;
   }
 
+  /* ── MOVING SCANLINE ── */
+  .scanline {
+    position: fixed; inset: 0; pointer-events: none; z-index: 1; overflow: hidden;
+  }
+  .scanline::after {
+    content: '';
+    position: absolute; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(transparent, rgba(0,229,160,0.04), transparent);
+    animation: scan 8s linear infinite;
+  }
+  @keyframes scan { 0% { top: -2px; } 100% { top: 100%; } }
+
+  /* ── NAV ── */
   nav {
     position: fixed; top: 0; left: 0; right: 0; z-index: 100;
     display: flex; justify-content: space-between; align-items: center;
-    padding: 18px 48px;
-    background: rgba(8,12,20,0.92);
-    backdrop-filter: blur(12px);
+    padding: 18px 52px;
+    background: rgba(8,12,20,0.88);
+    backdrop-filter: blur(16px);
     border-bottom: 1px solid var(--border);
   }
-  .nav-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; color: var(--white); text-decoration: none; }
+  .nav-logo {
+    font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px;
+    color: var(--white); text-decoration: none; letter-spacing: -0.5px;
+  }
   .nav-logo span { color: var(--accent); }
-  .nav-links { display: flex; gap: 32px; }
-  .nav-links a { color: var(--muted); text-decoration: none; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; transition: color 0.2s; }
+  .nav-links { display: flex; gap: 36px; }
+  .nav-links a {
+    color: var(--muted); text-decoration: none; font-size: 11px;
+    letter-spacing: 2.5px; text-transform: uppercase;
+    transition: color 0.2s; position: relative;
+  }
+  .nav-links a::after {
+    content: ''; position: absolute; bottom: -3px; left: 0; right: 0;
+    height: 1px; background: var(--accent);
+    transform: scaleX(0); transform-origin: left; transition: transform 0.25s;
+  }
   .nav-links a:hover { color: var(--accent); }
+  .nav-links a:hover::after { transform: scaleX(1); }
 
-  /* HERO */
+  /* ── SCROLL REVEAL ── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.65s ease, transform 0.65s ease;
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .reveal-delay-1 { transition-delay: 0.1s; }
+  .reveal-delay-2 { transition-delay: 0.2s; }
+  .reveal-delay-3 { transition-delay: 0.3s; }
+  .reveal-delay-4 { transition-delay: 0.4s; }
+
+  /* ── HERO ── */
   .hero {
     position: relative; z-index: 1;
-    max-width: 1100px; margin: 0 auto;
-    padding: 108px 48px 56px;
-    display: grid; grid-template-columns: 1fr 1fr; gap: 52px; align-items: start;
+    max-width: 1120px; margin: 0 auto;
+    padding: 116px 52px 64px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: start;
   }
 
   .hero-eyebrow {
     display: inline-flex; align-items: center; gap: 10px;
-    color: var(--accent); font-size: 12px; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 22px;
+    color: var(--accent); font-size: 11px; letter-spacing: 3px;
+    text-transform: uppercase; margin-bottom: 24px;
   }
-  .hero-eyebrow::before { content: ''; display: block; width: 24px; height: 1px; background: var(--accent); }
+  .hero-eyebrow::before { content: ''; display: block; width: 28px; height: 1px; background: var(--accent); }
 
   .hero h1 {
     font-family: 'Syne', sans-serif; font-weight: 800;
-    font-size: clamp(40px, 5vw, 70px); line-height: 1.0;
-    color: var(--white); letter-spacing: -2px; margin-bottom: 22px;
+    font-size: clamp(42px, 5.5vw, 74px); line-height: 1.0;
+    color: var(--white); letter-spacing: -2px; margin-bottom: 26px;
   }
   .hero h1 .acc { color: var(--accent); }
-  .hero h1 .hot { color: var(--hot); }
+  .hero h1 .hot { color: var(--hot); font-size: 0.52em; letter-spacing: -1px; }
 
-  /* ── TERMINAL BLOCK (fixed-height, no-jump) ── */
+  /* ── GLITCH ── */
+  .glitch-wrap { position: relative; display: inline-block; }
+  .glitch-wrap::before, .glitch-wrap::after {
+    content: attr(data-text);
+    position: absolute; top: 0; left: 0;
+    font-family: inherit; font-size: inherit; font-weight: inherit;
+    line-height: inherit; letter-spacing: inherit;
+    color: var(--white);
+    opacity: 0;
+  }
+  .glitch-wrap::before { color: var(--hot); }
+  .glitch-wrap::after  { color: var(--accent); }
+  .glitch-wrap.glitching::before {
+    opacity: 0.8;
+    animation: g1 0.35s steps(2) forwards;
+  }
+  .glitch-wrap.glitching::after {
+    opacity: 0.8;
+    animation: g2 0.35s steps(2) forwards;
+  }
+  @keyframes g1 {
+    0%  { clip-path: inset(20% 0 65% 0); transform: translateX(-5px); }
+    33% { clip-path: inset(50% 0 20% 0); transform: translateX(4px); }
+    66% { clip-path: inset(75% 0 5%  0); transform: translateX(-3px); }
+    100%{ clip-path: inset(0 0 100% 0);  transform: translateX(0); opacity: 0; }
+  }
+  @keyframes g2 {
+    0%  { clip-path: inset(60% 0 15% 0); transform: translateX(5px); }
+    33% { clip-path: inset(10% 0 70% 0); transform: translateX(-4px); }
+    66% { clip-path: inset(40% 0 40% 0); transform: translateX(3px); }
+    100%{ clip-path: inset(0 0 100% 0);  transform: translateX(0); opacity: 0; }
+  }
+
+  /* ── TERMINAL ── */
   .terminal-block {
     background: var(--surface);
     border: 1px solid var(--border);
     border-left: 3px solid var(--accent);
     padding: 16px 20px;
-    margin-bottom: 24px;
+    margin-bottom: 28px;
     position: relative;
-    height: 110px;          /* fixed: never grows */
-    overflow: hidden;       /* clip overflowing lines */
+    height: 114px;
+    overflow: hidden;
   }
   .terminal-block::before {
-    content: '// about.txt';
+    content: '// live.sys';
     position: absolute; top: -10px; left: 16px;
     background: var(--bg); padding: 0 8px;
-    font-size: 11px; color: var(--muted); letter-spacing: 1px;
-    z-index: 2;
+    font-size: 10px; color: var(--muted); letter-spacing: 1.5px; z-index: 2;
   }
-  /* subtle fade at the bottom so cut-off lines look intentional */
   .terminal-block::after {
     content: '';
-    position: absolute; bottom: 0; left: 0; right: 0; height: 28px;
+    position: absolute; bottom: 0; left: 0; right: 0; height: 32px;
     background: linear-gradient(transparent, var(--surface));
     pointer-events: none; z-index: 1;
   }
-  #term-inner {
-    /* transform is driven by JS to scroll upward */
-    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  .term-line {
-    font-size: 13px;
-    color: var(--text);
-    white-space: pre;
-    line-height: 1.65;
-    display: block;
-  }
+  #term-inner { transition: transform 0.35s cubic-bezier(0.4,0,0.2,1); }
+  .term-line { font-size: 12px; color: var(--text); white-space: pre; line-height: 1.7; display: block; }
   .term-line.cmd  { color: var(--accent); }
-  .term-line.out  { color: var(--text); }
+  .term-line.err  { color: var(--hot); }
+  .term-line.sys  { color: var(--purple); }
   .cursor {
-    display: inline-block; width: 8px; height: 13px;
+    display: inline-block; width: 8px; height: 12px;
     background: var(--accent);
     animation: blink 1s step-end infinite;
     vertical-align: middle; margin-left: 2px;
   }
   @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
 
-  .cta-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+  .cta-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
 
   .btn {
     display: inline-flex; align-items: center; gap: 8px;
-    padding: 10px 20px; text-decoration: none;
-    font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase;
+    padding: 10px 22px; text-decoration: none;
+    font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
     font-family: 'JetBrains Mono', monospace; transition: all 0.2s;
+    position: relative; overflow: hidden;
   }
-  .btn-primary { background: var(--accent); color: var(--bg); font-weight: 600; }
-  .btn-primary:hover { background: #00ffb2; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,229,160,0.25); }
+  .btn::after {
+    content: ''; position: absolute; inset: 0;
+    background: rgba(255,255,255,0.06);
+    transform: translateX(-100%); transition: transform 0.3s ease;
+  }
+  .btn:hover::after { transform: translateX(0); }
+  .btn-primary { background: var(--accent); color: var(--bg); font-weight: 700; }
+  .btn-primary:hover { background: #00ffb3; transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,229,160,0.3); }
   .btn-ghost { border: 1px solid var(--border); color: var(--muted); }
   .btn-ghost:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
   .btn-cv { border: 1px solid var(--accent); color: var(--accent); }
@@ -146,151 +244,193 @@
 
   .status-badge {
     display: inline-flex; align-items: center; gap: 8px;
-    padding: 7px 14px; border: 1px solid rgba(0,229,160,0.25);
-    color: var(--accent); font-size: 12px; letter-spacing: 1px;
+    padding: 8px 14px; border: 1px solid rgba(0,229,160,0.2);
+    color: var(--accent); font-size: 11px; letter-spacing: 1.5px;
+    background: rgba(0,229,160,0.04);
   }
   .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 2s ease infinite; flex-shrink: 0; }
-  @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(0,229,160,0.4)} 50%{box-shadow:0 0 0 6px rgba(0,229,160,0)} }
+  @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(0,229,160,0.5)} 60%{box-shadow:0 0 0 7px rgba(0,229,160,0)} }
 
-  /* About right panel */
-  .about-panel { display: flex; flex-direction: column; gap: 20px; padding-top: 6px; }
-  .about-bio { font-size: 14px; color: var(--text); line-height: 1.9; font-family: 'Syne', sans-serif; }
+  /* ── ABOUT PANEL ── */
+  .about-panel { display: flex; flex-direction: column; gap: 22px; padding-top: 8px; }
+  .about-bio { font-size: 14px; color: var(--text); line-height: 2; font-family: 'Syne', sans-serif; }
   .about-bio em { color: var(--accent); font-style: normal; }
+  .about-bio strong { color: var(--hot); font-weight: 600; }
 
   .about-grid {
     display: grid; grid-template-columns: 1fr 1fr;
     gap: 1px; background: var(--border); border: 1px solid var(--border);
   }
-  .about-cell { background: var(--surface); padding: 18px 20px; }
-  .cell-title { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
-  .focus-list, .fact-list { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+  .about-cell { background: var(--surface); padding: 20px 22px; }
+  .cell-title { font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--accent); margin-bottom: 14px; }
+  .focus-list, .fact-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
   .focus-list li { font-size: 12px; color: var(--text); }
   .focus-list li::before { content: '▸ '; color: var(--hot); }
-  .fact-list li { font-size: 12px; color: var(--muted); }
+  .fact-list li { font-size: 12px; color: var(--muted); padding-left: 4px; }
+  .fact-list li::before { content: '— '; color: var(--border); }
 
-  /* SECTIONS */
-  section { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 60px 48px; }
+  /* ── SECTIONS ── */
+  section { position: relative; z-index: 1; max-width: 1120px; margin: 0 auto; padding: 64px 52px; }
   .section-label {
     display: flex; align-items: center; gap: 12px;
-    color: var(--muted); font-size: 11px; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 28px;
+    color: var(--muted); font-size: 11px; letter-spacing: 3px;
+    text-transform: uppercase; margin-bottom: 32px;
   }
-  .section-label span { color: var(--accent); }
+  .section-label span { color: var(--accent); font-weight: 600; }
   .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
-  .divider { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 0 48px; }
+  .divider { position: relative; z-index: 1; max-width: 1120px; margin: 0 auto; padding: 0 52px; }
   .divider hr { border: none; border-top: 1px solid var(--border); }
 
-  /* PROJECTS */
-  .sub-label { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; }
+  /* ── PROJECTS ── */
+  .sub-label { font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase; margin-bottom: 14px; }
   .sub-label.done { color: var(--accent); }
-  .sub-label.wip  { color: var(--hot); margin-top: 36px; }
+  .sub-label.wip  { color: var(--hot); margin-top: 40px; }
 
   .pgrid {
     display: grid; grid-template-columns: repeat(3,1fr);
     gap: 1px; background: var(--border); border: 1px solid var(--border);
   }
   .pcard {
-    background: var(--bg); padding: 26px 24px;
+    background: var(--bg); padding: 28px 26px;
     text-decoration: none; color: inherit;
-    display: flex; flex-direction: column; gap: 9px;
-    transition: background 0.2s; position: relative; overflow: hidden;
+    display: flex; flex-direction: column; gap: 10px;
+    transition: background 0.25s, transform 0.25s; position: relative; overflow: hidden;
   }
   .pcard::before {
     content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-    background: var(--accent); transform: scaleX(0); transform-origin: left; transition: transform 0.3s;
+    background: var(--accent); transform: scaleX(0); transform-origin: left; transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
   }
   .pcard:hover { background: var(--surface); }
   .pcard:hover::before { transform: scaleX(1); }
+
+  .pcard:nth-child(1)::before { background: var(--accent); }
   .pcard:nth-child(2)::before { background: var(--hot); }
-  .pcard:nth-child(3)::before { background: #7c6af7; }
-  .pcard.wip { cursor: default; opacity: 0.72; }
-  .pcard.wip::before { background: var(--hot); transform: scaleX(1); }
+  .pcard:nth-child(3)::before { background: var(--purple); }
 
-  .pnum  { font-size: 11px; color: var(--muted); letter-spacing: 1.5px; }
+  .pcard.wip { opacity: 0.75; }
+  .pcard.wip::before { transform: scaleX(1); background: rgba(255,62,108,0.5); }
+  .pcard.wip:hover { opacity: 0.9; }
+
+  .pnum  { font-size: 10px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; }
   .pnum.hot { color: var(--hot); }
-  .pname { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 16px; color: var(--white); line-height: 1.2; }
-  .pdesc { font-size: 12px; color: var(--muted); line-height: 1.6; flex: 1; }
-  .ptags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; }
-  .tag   { padding: 2px 8px; border: 1px solid var(--border); font-size: 10px; color: var(--muted); }
-  .plink { font-size: 11px; color: var(--accent); letter-spacing: 1px; text-transform: uppercase; margin-top: 4px; }
+  .pname { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 17px; color: var(--white); line-height: 1.25; }
+  .pdesc { font-size: 12px; color: var(--muted); line-height: 1.75; flex: 1; }
+  .ptags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+  .tag   { padding: 2px 9px; border: 1px solid var(--border); font-size: 10px; color: var(--muted); letter-spacing: 0.5px; }
+  .plink { font-size: 10px; color: var(--accent); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 6px; }
   .plink::after { content: ' →'; }
-  .pwip  { font-size: 11px; color: var(--hot);   letter-spacing: 1px; text-transform: uppercase; margin-top: 4px; }
+  .pwip  { font-size: 10px; color: var(--hot); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 6px; }
 
-  .gh-row { display: flex; align-items: center; gap: 16px; margin-top: 20px; }
+  .gh-row { display: flex; align-items: center; gap: 18px; margin-top: 24px; }
 
-  /* SKILLS — no progress bars */
+  /* ── SKILLS ── */
   .skills-grid {
     display: grid; grid-template-columns: repeat(4,1fr);
     gap: 1px; background: var(--border); border: 1px solid var(--border);
   }
-  .sg { background: var(--surface); padding: 22px 20px; }
-  .sg-title { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin-bottom: 14px; }
+  .sg { background: var(--surface); padding: 24px 22px; }
+  .sg-title { font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--accent); margin-bottom: 16px; }
   .si {
-    padding: 7px 0;
-    border-bottom: 1px solid var(--border);
-    font-size: 13px;
-    color: var(--text);
+    padding: 8px 0; border-bottom: 1px solid var(--border);
+    font-size: 13px; color: var(--text);
+    display: flex; align-items: center; gap: 8px;
+    transition: color 0.2s;
   }
   .si:last-child { border-bottom: none; }
+  .si::before { content: ''; display: block; width: 4px; height: 4px; border-radius: 50%; background: var(--muted); flex-shrink: 0; transition: background 0.2s; }
+  .sg:hover .si { color: var(--white); }
+  .sg:hover .si::before { background: var(--accent); }
 
-  /* TRAINING */
+  /* ── TRAINING ── */
   .platforms { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); }
-  .plat { background: var(--surface); padding: 26px 24px; text-decoration: none; transition: background 0.2s; }
-  .plat:hover { background: #111b2e; }
-  .plat-name { font-family: 'Syne', sans-serif; font-weight: 700; color: var(--white); font-size: 16px; margin-bottom: 6px; }
-  .plat-sub  { font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .plat {
+    background: var(--surface); padding: 28px 26px;
+    text-decoration: none; transition: background 0.2s; display: block;
+    position: relative; overflow: hidden;
+  }
+  .plat::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+    background: var(--accent); transform: scaleX(0); transform-origin: left; transition: transform 0.3s;
+  }
+  .plat:hover { background: rgba(0,229,160,0.03); }
+  .plat:hover::after { transform: scaleX(1); }
+  .plat-name { font-family: 'Syne', sans-serif; font-weight: 700; color: var(--white); font-size: 17px; margin-bottom: 8px; }
+  .plat-sub  { font-size: 12px; color: var(--muted); line-height: 1.7; }
+  .plat-handle { font-size: 11px; color: var(--accent); margin-top: 8px; letter-spacing: 1px; }
 
-  /* EXPERIENCE */
+  /* ── EXPERIENCE ── */
   .exp-list { display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); }
-  .exp-item { background: var(--surface); padding: 26px 28px; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: start; }
-  .exp-role { font-family: 'Syne', sans-serif; font-weight: 700; color: var(--white); font-size: 16px; margin-bottom: 4px; }
-  .exp-org  { font-size: 12px; color: var(--accent); margin-bottom: 10px; }
-  .exp-desc { font-size: 12px; color: var(--muted); line-height: 1.8; }
-  .exp-date { font-size: 11px; color: var(--muted); letter-spacing: 1px; white-space: nowrap; text-align: right; }
+  .exp-item {
+    background: var(--surface); padding: 28px 30px;
+    display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: start;
+    transition: background 0.2s;
+  }
+  .exp-item:hover { background: rgba(0,229,160,0.02); }
+  .exp-role { font-family: 'Syne', sans-serif; font-weight: 700; color: var(--white); font-size: 16px; margin-bottom: 5px; }
+  .exp-org  { font-size: 12px; color: var(--accent); margin-bottom: 12px; letter-spacing: 0.5px; }
+  .exp-desc { font-size: 12px; color: var(--muted); line-height: 1.85; }
+  .exp-desc li { margin-bottom: 4px; list-style: none; padding-left: 14px; position: relative; }
+  .exp-desc li::before { content: '▸'; position: absolute; left: 0; color: var(--hot); font-size: 10px; top: 2px; }
+  .exp-date { font-size: 11px; color: var(--muted); letter-spacing: 1px; white-space: nowrap; text-align: right; padding-top: 3px; }
 
-  /* CONNECT */
+  /* ── CONNECT ── */
   .connect-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); }
-  .clink { background: var(--surface); display: flex; align-items: center; gap: 14px; padding: 22px 20px; text-decoration: none; color: var(--text); transition: background 0.2s; }
-  .clink:hover { background: #111b2e; }
-  .cicon { width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); font-size: 12px; color: var(--accent); flex-shrink: 0; font-family: 'Syne', sans-serif; font-weight: 700; }
+  .clink {
+    background: var(--surface); display: flex; align-items: center; gap: 14px;
+    padding: 24px 22px; text-decoration: none; color: var(--text);
+    transition: background 0.2s; position: relative; overflow: hidden;
+  }
+  .clink::before {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+    background: var(--accent); transform: scaleX(0); transform-origin: left; transition: transform 0.3s;
+  }
+  .clink:hover { background: rgba(0,229,160,0.03); }
+  .clink:hover::before { transform: scaleX(1); }
+  .cicon {
+    width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+    border: 1px solid var(--border); font-size: 12px; color: var(--accent); flex-shrink: 0;
+    font-family: 'Syne', sans-serif; font-weight: 800; letter-spacing: 0;
+    transition: background 0.2s, color 0.2s;
+  }
+  .clink:hover .cicon { background: var(--accent); color: var(--bg); border-color: var(--accent); }
   .cname { font-size: 13px; color: var(--white); margin-bottom: 3px; }
   .csub  { font-size: 11px; color: var(--muted); }
 
+  /* ── FOOTER ── */
   footer {
     position: relative; z-index: 1;
-    border-top: 1px solid var(--border); padding: 26px 48px;
+    border-top: 1px solid var(--border); padding: 28px 52px;
     display: flex; justify-content: space-between; align-items: center;
   }
   footer p { font-size: 12px; color: var(--muted); }
   footer span { color: var(--accent); }
 
-  @keyframes glitch {
-    0%,100%{clip-path:none;transform:none}
-    20%{clip-path:inset(30% 0 50% 0);transform:translateX(-4px)}
-    40%{clip-path:inset(70% 0 10% 0);transform:translateX(4px)}
-    60%{clip-path:none;transform:none}
-  }
-  .hero h1:hover .gt { animation: glitch 0.4s steps(1) forwards; }
-
+  /* ── RESPONSIVE ── */
   @media (max-width: 900px) {
-    .hero { grid-template-columns: 1fr; gap: 32px; }
+    .hero { grid-template-columns: 1fr; gap: 36px; }
     .skills-grid { grid-template-columns: 1fr 1fr; }
     .pgrid { grid-template-columns: 1fr; }
     .connect-grid { grid-template-columns: 1fr 1fr; }
     .platforms { grid-template-columns: 1fr; }
     .exp-item { grid-template-columns: 1fr; }
+    .exp-date { text-align: left; }
   }
   @media (max-width: 600px) {
     nav { padding: 14px 20px; }
     .nav-links { display: none; }
-    section, .hero { padding: 80px 20px 40px; }
+    section, .hero { padding: 88px 20px 40px; }
     .divider { padding: 0 20px; }
-    footer { padding: 20px; flex-direction: column; gap: 6px; text-align: center; }
+    footer { padding: 20px; flex-direction: column; gap: 8px; text-align: center; }
     .skills-grid, .connect-grid, .about-grid { grid-template-columns: 1fr; }
   }
 </style>
 </head>
 <body>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+<div class="scanline"></div>
 
 <nav>
   <a class="nav-logo" href="#"><span>//</span> hexwrk</a>
@@ -303,111 +443,110 @@
   </div>
 </nav>
 
+<!-- ── HERO ── -->
 <div class="hero">
-
-  <!-- LEFT -->
   <div>
-    <div class="hero-eyebrow">Pretoria, South Africa &nbsp;·&nbsp; Open to Opportunities</div>
-    <h1>
-      <span class="gt">Tristan</span><br>
+    <div class="hero-eyebrow reveal">Pretoria, South Africa &nbsp;·&nbsp; Open to Opportunities</div>
+
+    <h1 class="reveal reveal-delay-1">
+      <span class="glitch-wrap" data-text="Tristan">Tristan</span><br>
       <span class="acc">Joubert</span><br>
-      <span class="hot" style="font-size:0.52em;letter-spacing:-1px;">Cybersecurity &amp; Data Science</span>
+      <span class="hot">Cybersecurity &amp; Data Science</span>
     </h1>
 
-    <!-- Fixed-height terminal that scrolls content upward instead of expanding -->
-    <div class="terminal-block">
+    <div class="terminal-block reveal reveal-delay-2">
       <div id="term-inner"></div>
     </div>
 
-    <div class="cta-row">
+    <div class="cta-row reveal reveal-delay-3">
       <div class="status-badge"><div class="dot"></div>Open to internships &amp; junior roles</div>
     </div>
-    <div class="cta-row">
+    <div class="cta-row reveal reveal-delay-4">
       <a href="https://github.com/hexwrk" target="_blank" class="btn btn-primary">GitHub</a>
       <a href="https://www.linkedin.com/in/tristan-joubert-5a847b350/" target="_blank" class="btn btn-ghost">LinkedIn</a>
-      <a href="Tristan CV.pdf" download class="btn btn-cv">↓ CV</a>
+      <a href="Tristan CV.pdf" download class="btn btn-cv">↓ Download CV</a>
     </div>
   </div>
 
   <!-- RIGHT: About -->
   <div class="about-panel">
-    <p class="about-bio">
-      BSc IT student specialising in <em>Data Science</em> and
-      <em>red team operations</em>. Building toward penetration testing and exploit
-      development roles — focused on breaking systems apart to understand how they
-      actually fail. Tackling real attack chains rather than theory.
-      Turning informations into data.
+    <p class="about-bio reveal">
+      BSc IT student specialising in <em>data science</em> and
+      <em>red team operations</em>. Building toward penetration testing and
+      exploit development roles — focused on breaking systems apart to understand
+      how they <strong>actually fail</strong>. Tackling real attack chains, not theory.
+      Turning raw data into operational intelligence.
     </p>
 
-    <div class="about-grid">
+    <div class="about-grid reveal reveal-delay-1">
       <div class="about-cell">
         <div class="cell-title">Focus Areas</div>
         <ul class="focus-list">
           <li>Offensive Security &amp; Red Team Ops</li>
           <li>Exploitation &amp; Payload Dev</li>
           <li>Vulnerability Research</li>
-          <li>Adversarial ML / Evasion</li>
+          <li>Security Data Analytics</li>
           <li>Exploit Scripting &amp; Automation</li>
         </ul>
       </div>
       <div class="about-cell">
         <div class="cell-title">Quick Facts</div>
         <ul class="fact-list">
-          <li>📍 Elarduspark, Pretoria</li>
-          <li>🎓 BSc IT — Year 3</li>
-          <li> Richfield GIT, Centurion</li>
-          <li> Code 08, own transport</li>
+          <li>Elarduspark, Pretoria</li>
+          <li>BSc IT — Year 3 (2026)</li>
+          <li>Richfield GIT, Centurion</li>
+          <li>Code 08, own transport</li>
+          <li>Available Wed PM + Thu AM</li>
         </ul>
       </div>
     </div>
   </div>
-
 </div>
 
 <div class="divider"><hr></div>
 
-<!-- PROJECTS -->
+<!-- ── PROJECTS ── -->
 <section id="projects">
-  <div class="section-label"><span>02</span> Projects</div>
+  <div class="section-label reveal"><span>02</span> Projects</div>
 
-  <p class="sub-label done">Completed</p>
-  <div class="pgrid">
+  <p class="sub-label done reveal">Completed</p>
+  <div class="pgrid reveal reveal-delay-1">
     <a class="pcard" href="https://github.com/hexwrk/security-pre-commit-scanner" target="_blank">
       <div class="pnum">01 — Security Tool</div>
       <div class="pname">Security Pre-Commit Scanner</div>
-      <div class="pdesc">Git hook that blocks insecure Python code before it reaches a repo. Detects hardcoded secrets, SQL injection, unsafe command execution, and weak cryptography via configurable YAML rules.</div>
+      <div class="pdesc">Git hook that blocks insecure Python before it reaches a repo. Detects hardcoded secrets, SQL injection, unsafe command execution, and weak cryptography via configurable YAML rules.</div>
       <div class="ptags"><span class="tag">Python</span><span class="tag">Git Hooks</span><span class="tag">Regex</span><span class="tag">YAML</span><span class="tag">DevSecOps</span></div>
       <span class="plink">View Repo</span>
     </a>
     <a class="pcard" href="https://github.com/hexwrk/AutoTublify" target="_blank">
       <div class="pnum">02 — Browser Extension</div>
       <div class="pname">AutoTublify</div>
-      <div class="pdesc">Autonomous Chrome extension generating on-demand YouTube video summaries without leaving the browser. Built on the Chrome Extension API with a non-intrusive UI layer.</div>
+      <div class="pdesc">Autonomous Chrome extension generating on-demand YouTube video summaries without leaving the browser. Chrome Extension API with a non-intrusive UI overlay.</div>
       <div class="ptags"><span class="tag">JavaScript</span><span class="tag">Chrome API</span><span class="tag">Automation</span></div>
       <span class="plink">View Repo</span>
     </a>
     <a class="pcard" href="https://github.com/hexwrk/guidewise" target="_blank">
-      <div class="pnum">03 — Web</div>
+      <div class="pnum">03 — Web Platform</div>
       <div class="pname">GuideWise</div>
-      <div class="pdesc">Marketing landing page for an educational platform offering smart study guides and assignment pre-grading services. Responsive layout with a conversion-focused structure.</div>
-      <div class="ptags"><span class="tag">HTML</span><span class="tag">CSS</span><span class="tag">Responsive</span></div>
+      <div class="pdesc">AI-powered educational platform offering smart study guides and assignment pre-grading services. Responsive layout with a conversion-focused structure.</div>
+      <div class="ptags"><span class="tag">HTML</span><span class="tag">CSS</span><span class="tag">JavaScript</span><span class="tag">Responsive</span></div>
       <span class="plink">View Repo</span>
     </a>
   </div>
 
-  <p class="sub-label wip">In Progress</p>
-  <div class="pgrid">
+  <p class="sub-label wip reveal">In Progress</p>
+  <div class="pgrid reveal reveal-delay-1">
     <div class="pcard wip">
-      <div class="pnum hot">WIP — Offensive Tooling</div>
+      <div class="pnum hot">WIP — Threat Detection</div>
       <div class="pname">Security Log Analyzer</div>
-      <div class="pdesc">Automated log parser built to surface attack patterns and exploitation indicators. Pandas for offline correlation, ELK Stack for ingestion, Kibana for timeline reconstruction.</div>
+      <div class="pdesc">Automated log parser surfacing attack patterns and exploitation indicators. Pandas for offline correlation, ELK Stack ingestion, Kibana for timeline reconstruction of 10,000+ entries.</div>
       <div class="ptags"><span class="tag">Python</span><span class="tag">Pandas</span><span class="tag">ELK Stack</span><span class="tag">Kibana</span></div>
       <span class="pwip">In Development</span>
     </div>
     <div class="pcard wip">
-      <div class="pnum hot">WIP — ML / Evasion Research</div>
+      <div class="pnum hot">WIP — ML / Anomaly Detection</div>
       <div class="pname">ML System Monitor</div>
-      <div class="pdesc">Infra telemetry tool exploring anomaly signatures from an attacker's perspective — what does lateral movement actually look like in Prometheus metrics? Grafana dashboards for pattern analysis.</div>
+      <div class="pdesc">Infra telemetry tool exploring anomaly signatures from an attacker's perspective. What does lateral movement look like in Prometheus metrics? Grafana dashboards for pattern analysis.</div>
       <div class="ptags"><span class="tag">Python</span><span class="tag">scikit-learn</span><span class="tag">Prometheus</span><span class="tag">Grafana</span></div>
       <span class="pwip">In Development</span>
     </div>
@@ -420,21 +559,22 @@
     </div>
   </div>
 
-  <div class="gh-row">
+  <div class="gh-row reveal">
     <a href="https://github.com/hexwrk?tab=repositories" target="_blank" class="btn btn-ghost">View All on GitHub →</a>
-    <span style="font-size:12px;color:var(--muted);">3 completed · 3 in progress</span>
+    <span style="font-size:12px;color:var(--muted);">3 completed &nbsp;·&nbsp; 3 in progress</span>
   </div>
 </section>
 
 <div class="divider"><hr></div>
 
-<!-- SKILLS -->
+<!-- ── SKILLS ── -->
 <section id="skills">
-  <div class="section-label"><span>03</span> Technical Stack</div>
-  <div class="skills-grid">
+  <div class="section-label reveal"><span>03</span> Technical Stack</div>
+  <div class="skills-grid reveal reveal-delay-1">
     <div class="sg">
       <div class="sg-title">Languages</div>
       <div class="si">Python</div>
+      <div class="si">Java</div>
       <div class="si">C++</div>
       <div class="si">Bash</div>
       <div class="si">SQL</div>
@@ -443,65 +583,106 @@
     <div class="sg">
       <div class="sg-title">Security Tools</div>
       <div class="si">Nmap</div>
-      <div class="si">Wireshark</div>
-      <div class="si">Metasploit</div>
       <div class="si">Burp Suite</div>
-      <div class="si">OWASP ZAP</div>
+      <div class="si">Metasploit</div>
+      <div class="si">Wireshark</div>
+      <div class="si">John the Ripper</div>
+      <div class="si">Gobuster / ffuf</div>
     </div>
     <div class="sg">
       <div class="sg-title">Data &amp; Analytics</div>
       <div class="si">Pandas</div>
       <div class="si">NumPy</div>
+      <div class="si">scikit-learn</div>
       <div class="si">Matplotlib</div>
       <div class="si">Plotly</div>
-      <div class="si">scikit-learn</div>
+      <div class="si">ELK Stack</div>
     </div>
     <div class="sg">
-      <div class="sg-title">Tools &amp; Ops</div>
+      <div class="sg-title">Ops &amp; Platform</div>
+      <div class="si">Linux (Ubuntu/Debian)</div>
       <div class="si">Git / GitHub</div>
-      <div class="si">Linux</div>
-      <div class="si">Terminal</div>
+      <div class="si">Docker</div>
+      <div class="si">Prometheus</div>
+      <div class="si">Grafana</div>
+      <div class="si">zsh / Bash scripting</div>
     </div>
   </div>
 </section>
 
 <div class="divider"><hr></div>
 
-<!-- TRAINING -->
+<!-- ── TRAINING ── -->
 <section id="training">
-  <div class="section-label"><span>04</span> Training Platforms</div>
-  <div class="platforms">
+  <div class="section-label reveal"><span>04</span> Training Platforms</div>
+  <div class="platforms reveal reveal-delay-1">
     <a class="plat" href="https://tryhackme.com/p/Furios" target="_blank">
       <div class="plat-name">TryHackMe</div>
-      <div class="plat-sub">Active — Offensive pentesting path<br>Handle: Furios</div>
+      <div class="plat-sub">Active — Offensive pentesting path. Rooms covering network exploitation, privilege escalation, web vulnerabilities, and password cracking.</div>
+      <div class="plat-handle">Handle: Furios →</div>
+    </a>
+    <a class="plat" href="https://app.hackthebox.com" target="_blank">
+      <div class="plat-name">Hack The Box</div>
+      <div class="plat-sub">Active machine exploitation and CTF challenges. Focus on real-world attack chains, LFI, RCE research, and post-exploitation enumeration.</div>
+      <div class="plat-handle">Active →</div>
     </a>
     <div class="plat">
-      <div class="plat-name">Hack The Box</div>
-      <div class="plat-sub">Active exploitation &amp; CTF challenges</div>
-    </div>
-    <div class="plat">
-      <div class="plat-name">Self-Directed Study</div>
-      <div class="plat-sub">Exploit dev, adversarial ML,<br>red team tradecraft — 2024–present</div>
+      <div class="plat-name">Self-Directed</div>
+      <div class="plat-sub">Exploit dev, adversarial ML, red team tradecraft, data engineering pipelines, and machine learning curriculum — 2024 to present.</div>
+      <div class="plat-handle">2024 — present</div>
     </div>
   </div>
 </section>
 
 <div class="divider"><hr></div>
 
-<!-- CONNECT -->
+<!-- ── EXPERIENCE ── -->
+<section id="experience">
+  <div class="section-label reveal"><span>05</span> Experience</div>
+  <div class="exp-list reveal reveal-delay-1">
+    <div class="exp-item">
+      <div>
+        <div class="exp-role">Sales Consultant</div>
+        <div class="exp-org">Vape Vendors — Pretoria</div>
+        <ul class="exp-desc">
+          <li>Managed POS system processing 100+ daily transactions at 99% accuracy</li>
+          <li>Maintained inventory database across 500+ SKUs with 95%+ accuracy</li>
+          <li>Provided hardware/software troubleshooting for in-store systems</li>
+        </ul>
+      </div>
+      <div class="exp-date">Apr 2024 — Jan 2025</div>
+    </div>
+    <div class="exp-item">
+      <div>
+        <div class="exp-role">BSc IT Student</div>
+        <div class="exp-org">Richfield Graduate Institute of Technology — Centurion</div>
+        <ul class="exp-desc">
+          <li>Specialising in Cybersecurity and Data Analytics (Year 3, 2026)</li>
+          <li>Modules: AI 700, Cyber Security 700, Machine Learning 700, HCI 700, Java OOP</li>
+          <li>Building practical skills parallel to curriculum through independent project work</li>
+        </ul>
+      </div>
+      <div class="exp-date">2024 — Present</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"><hr></div>
+
+<!-- ── CONNECT ── -->
 <section id="connect">
-  <div class="section-label"><span>06</span> Get In Touch</div>
-  <p style="font-size:13px;color:var(--muted);max-width:520px;margin-bottom:24px;line-height:1.8;">
-    Open to part-time or full-time IT internships in any Cybersecurity / Data Analytics roles. Based in Pretoria — available for remote and on-site roles.
+  <div class="section-label reveal"><span>06</span> Get In Touch</div>
+  <p class="reveal" style="font-size:13px;color:var(--muted);max-width:540px;margin-bottom:26px;line-height:1.9;">
+    Open to WIL placements, part-time and full-time IT internships in cybersecurity and data analytics. Based in Pretoria — available for remote and on-site roles.
   </p>
-  <div class="connect-grid">
+  <div class="connect-grid reveal reveal-delay-1">
     <a class="clink" href="https://www.linkedin.com/in/tristan-joubert-5a847b350/" target="_blank">
       <div class="cicon">in</div>
-      <div><div class="cname">LinkedIn</div><div class="csub">tristan-joubert-5a847b350</div></div>
+      <div><div class="cname">LinkedIn</div><div class="csub">tristan-joubert</div></div>
     </a>
     <a class="clink" href="https://github.com/hexwrk" target="_blank">
       <div class="cicon">&lt;/&gt;</div>
-      <div><div class="cname">GitHub</div><div class="csub">github.com/hexwrk</div></div>
+      <div><div class="cname">GitHub</div><div class="csub">hexwrk</div></div>
     </a>
     <a class="clink" href="mailto:tristanjoubert02@gmail.com">
       <div class="cicon">@</div>
@@ -516,94 +697,113 @@
 
 <footer>
   <p>© 2026 <span>Tristan Joubert</span> &nbsp;·&nbsp; hexwrk</p>
-  <p>"Know the system. Break the system. Own the system."</p>
+  <p style="color:var(--muted);font-size:11px;">"Know the system. Break the system. Own the system."</p>
 </footer>
 
 <script>
-  /**
-   * Terminal that never expands the container.
-   * Lines are appended as <span> elements inside a wrapper div.
-   * When content overflows the fixed-height box, a CSS translateY
-   * slides the inner wrapper upward smoothly — exactly like a real
-   * terminal scrolling past its viewport.
-   */
-  const LINES = [
-    { text: '> whoami',                                              cls: 'cmd' },
-    { text: 'tristan_joubert — BSc IT yr3 · Pretoria',              cls: 'out' },
-    { text: '> skills --top',                                        cls: 'cmd' },
-    { text: 'Python · C++ · Bash · Metasploit · Burp Suite',        cls: 'out' },
-    { text: '> cat goals.txt',                                       cls: 'cmd' },
-    { text: 'red team operator · exploit dev · pen tester',         cls: 'out' },
-    { text: '> ls platforms/',                                       cls: 'cmd' },
-    { text: 'TryHackMe/Furios   HackTheBox   self-directed',        cls: 'out' },
-    { text: '> status',                                              cls: 'cmd' },
-    { text: 'OPEN — internship · part-time · remote or on-site',    cls: 'out' },
-  ];
+/* ── CUSTOM CURSOR ── */
+const cur = document.getElementById('cursor');
+const ring = document.getElementById('cursor-ring');
+let mx = -100, my = -100, rx = -100, ry = -100;
 
-  const wrap    = document.getElementById('term-inner');
-  const box     = wrap.parentElement; // .terminal-block
+document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
 
-  // Cursor element — always last child
-  const cursorEl = document.createElement('span');
-  cursorEl.className = 'cursor';
-  wrap.appendChild(cursorEl);
+function animateCursor() {
+  cur.style.left = mx + 'px';
+  cur.style.top  = my + 'px';
+  rx += (mx - rx) * 0.12;
+  ry += (my - ry) * 0.12;
+  ring.style.left = rx + 'px';
+  ring.style.top  = ry + 'px';
+  requestAnimationFrame(animateCursor);
+}
+animateCursor();
 
-  let lineIdx = 0;
-  let charIdx = 0;
+/* ── SCROLL REVEAL ── */
+const revealEls = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
+}, { threshold: 0.12 });
 
-  function scrollToBottom() {
-    // How much does the inner content exceed the box?
-    const overflow = wrap.scrollHeight - box.clientHeight;
-    if (overflow > 0) {
-      // Slide inner content up by that amount (+4px breathing room)
-      wrap.style.transform = `translateY(${-(overflow + 4)}px)`;
-    }
+revealEls.forEach(el => observer.observe(el));
+
+/* Mark hero elements visible immediately */
+document.querySelectorAll('.hero .reveal').forEach(el => {
+  setTimeout(() => el.classList.add('visible'), 100);
+});
+
+/* ── AUTO GLITCH on name ── */
+const glitchEl = document.querySelector('.glitch-wrap');
+function triggerGlitch() {
+  glitchEl.classList.add('glitching');
+  setTimeout(() => glitchEl.classList.remove('glitching'), 400);
+  setTimeout(triggerGlitch, 3500 + Math.random() * 4000);
+}
+setTimeout(triggerGlitch, 1800);
+
+/* ── TERMINAL ── */
+const LINES = [
+  { text: '> whoami',                                              cls: 'cmd' },
+  { text: 'tristan_joubert — BSc IT yr3 · Pretoria, ZA',         cls: 'out' },
+  { text: '> cat focus.txt',                                       cls: 'cmd' },
+  { text: 'red team · exploit dev · data science',                cls: 'sys' },
+  { text: '> ls tools/',                                           cls: 'cmd' },
+  { text: 'nmap  burpsuite  metasploit  wireshark  john',         cls: 'out' },
+  { text: '> htb --status',                                        cls: 'cmd' },
+  { text: '[active] hacking machines daily',                      cls: 'sys' },
+  { text: '> ./find-internship.py --location Pretoria',           cls: 'cmd' },
+  { text: 'scanning... open to WIL & junior roles',               cls: 'out' },
+];
+
+const wrap = document.getElementById('term-inner');
+const box  = wrap.parentElement;
+const cursorEl = document.createElement('span');
+cursorEl.className = 'cursor';
+wrap.appendChild(cursorEl);
+
+let lineIdx = 0, charIdx = 0;
+
+function scrollToBottom() {
+  const overflow = wrap.scrollHeight - box.clientHeight;
+  if (overflow > 0) wrap.style.transform = `translateY(${-(overflow + 4)}px)`;
+}
+
+function typeNext() {
+  if (lineIdx >= LINES.length) {
+    setTimeout(() => {
+      wrap.innerHTML = '';
+      wrap.appendChild(cursorEl);
+      wrap.style.transform = 'translateY(0)';
+      lineIdx = 0; charIdx = 0;
+      setTimeout(typeNext, 800);
+    }, 3000);
+    return;
   }
 
-  function typeNext() {
-    if (lineIdx >= LINES.length) {
-      // Done — pause then replay
-      setTimeout(() => {
-        wrap.innerHTML = '';
-        wrap.appendChild(cursorEl);
-        wrap.style.transform = 'translateY(0)';
-        lineIdx = 0; charIdx = 0;
-        setTimeout(typeNext, 600);
-      }, 2800);
-      return;
-    }
-
-    const { text, cls } = LINES[lineIdx];
-
-    // Create the line element on first char of this line
-    if (charIdx === 0) {
-      const span = document.createElement('span');
-      span.className = `term-line ${cls}`;
-      // Insert before cursor
-      wrap.insertBefore(span, cursorEl);
-    }
-
-    // Current line span (always second-to-last child before cursor)
-    const spans = wrap.querySelectorAll('.term-line');
-    const current = spans[spans.length - 1];
-
-    if (charIdx < text.length) {
-      current.textContent += text[charIdx];
-      charIdx++;
-      scrollToBottom();
-      setTimeout(typeNext, 38);
-    } else {
-      // Line done — add newline gap, move to next
-      current.textContent += '\n';
-      charIdx = 0;
-      lineIdx++;
-      scrollToBottom();
-      const pause = (lineIdx % 2 === 0) ? 460 : 140;
-      setTimeout(typeNext, pause);
-    }
+  const { text, cls } = LINES[lineIdx];
+  if (charIdx === 0) {
+    const span = document.createElement('span');
+    span.className = `term-line ${cls}`;
+    wrap.insertBefore(span, cursorEl);
   }
 
-  setTimeout(typeNext, 700);
+  const spans = wrap.querySelectorAll('.term-line');
+  const current = spans[spans.length - 1];
+
+  if (charIdx < text.length) {
+    current.textContent += text[charIdx];
+    charIdx++;
+    scrollToBottom();
+    setTimeout(typeNext, cls === 'cmd' ? 42 : 22);
+  } else {
+    current.textContent += '\n';
+    charIdx = 0; lineIdx++;
+    scrollToBottom();
+    setTimeout(typeNext, lineIdx % 2 === 0 ? 500 : 160);
+  }
+}
+
+setTimeout(typeNext, 900);
 </script>
 </body>
 </html>
