@@ -346,8 +346,8 @@ section { margin-bottom: 6.5rem; scroll-margin-top: calc(var(--nav-h) + 2rem); }
   font-family: var(--mono);
   font-size: 11px;
   line-height: 1.4;
-  color: var(--fnt);
-  opacity: .22;            /* very subtle */
+  color: var(--mut);
+  opacity: .45;
   pointer-events: none;
   white-space: pre;
   user-select: none;
@@ -360,7 +360,8 @@ section { margin-bottom: 6.5rem; scroll-margin-top: calc(var(--nav-h) + 2rem); }
   top: 2.5rem;
   right: 0;
   text-align: right;
-  opacity: .18;
+  opacity: .38;
+  color: var(--mut);
 }
 
 /* Centered divider between project types */
@@ -369,11 +370,11 @@ section { margin-bottom: 6.5rem; scroll-margin-top: calc(var(--nav-h) + 2rem); }
   align-items: center;
   justify-content: center;
   margin: 1.75rem 0 .5rem;
-  opacity: .2;
+  opacity: .5;
   font-family: var(--mono);
-  font-size: 12px;
-  color: var(--fnt);
-  letter-spacing: .15em;
+  font-size: 13px;
+  color: var(--cyan);
+  letter-spacing: .3em;
   white-space: pre;
   user-select: none;
 }
@@ -381,28 +382,26 @@ section { margin-bottom: 6.5rem; scroll-margin-top: calc(var(--nav-h) + 2rem); }
 /* Footer corner art */
 .ascii-footer-deco {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.35;
-  color: var(--fnt);
-  opacity: .18;
+  color: var(--cyan);
+  opacity: .35;
   white-space: pre;
   user-select: none;
   pointer-events: none;
 }
 
-/* Margin decoration beside skills */
-.ascii-skills-deco {
-  position: absolute;
-  right: -4rem;
-  top: 0;
-  opacity: .12;
+/* Side decoration in connect section */
+.ascii-connect-deco {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.4;
-  color: var(--fnt);
+  color: var(--mut);
+  opacity: .38;
   white-space: pre;
   user-select: none;
   pointer-events: none;
+  margin-bottom: 1.5rem;
 }
 
 /* ── FOCUS AREAS ───────────────────────────────────────────────────────── */
@@ -888,7 +887,59 @@ footer {
   transform: translateY(0);
 }
 
-/* ── MOBILE ────────────────────────────────────────────────────────────── */
+/* ── CUSTOM CURSOR ─────────────────────────────────────────────────────── */
+* { cursor: none !important; }
+
+.cursor-dot {
+  position: fixed;
+  width: 6px;
+  height: 6px;
+  background: var(--cyan);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 99999;
+  transform: translate(-50%, -50%);
+  transition: transform .1s ease, opacity .2s ease;
+  box-shadow: 0 0 6px rgba(0,229,255,.8);
+}
+
+.cursor-ring {
+  position: fixed;
+  width: 26px;
+  height: 26px;
+  border: 1.5px solid rgba(0,229,255,.55);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 99998;
+  transform: translate(-50%, -50%);
+  transition: width .2s ease, height .2s ease, border-color .2s ease, opacity .2s ease;
+  /* ring lags behind dot for the trailing feel */
+}
+
+/* Shrink ring on click */
+body.clicking .cursor-ring {
+  width: 16px;
+  height: 16px;
+  border-color: rgba(0,229,255,.9);
+}
+
+/* Expand ring on hoverable elements */
+body.hovering .cursor-ring {
+  width: 38px;
+  height: 38px;
+  border-color: rgba(0,229,255,.35);
+}
+body.hovering .cursor-dot {
+  transform: translate(-50%, -50%) scale(1.6);
+}
+
+/* ── MOBILE — restore default cursor ───────────────────────────────────── */
+@media (pointer: coarse) {
+  * { cursor: auto !important; }
+  .cursor-dot, .cursor-ring { display: none; }
+}
+
+
 @media (max-width: 700px) {
   .topnav { padding: 0 1.25rem; }
   .nav-links { display: none; }
@@ -902,6 +953,8 @@ footer {
 </style>
 </head>
 <body>
+<div class="cursor-dot"  id="cur-dot"></div>
+<div class="cursor-ring" id="cur-ring"></div>
 <div class="hex-bg"></div>
 <div class="scanline"></div>
 
@@ -953,7 +1006,7 @@ footer {
         <a href="Tristan CV.pdf" target="_blank">↓ Download CV</a>
       </div>
 
-      <div class="section-label">Focus Areas <span class="blink"></span></div>
+      <div class="section-label">Focus Areas</div>
       <div class="focus-grid">
         <div class="focus-item">Offensive Security</div>
         <div class="focus-item">Exploitation &amp; Payload Dev</div>
@@ -1172,6 +1225,7 @@ footer {
         Open to WIL placements, part-time and full-time IT internships in cybersecurity and data analytics.
         Based in Pretoria — available for remote and on-site roles.
       </p>
+      <div class="ascii-connect-deco">[ sys.status: open_to_work ] [ loc: pretoria.za ] [ mode: remote/onsite ]</div>
       <div class="connect-grid">
         <a class="connect-card" href="https://www.linkedin.com/in/tristan-joubert-5a847b350/" target="_blank">
           <div class="cc-icon">in</div>
@@ -1308,8 +1362,58 @@ const observer  = new IntersectionObserver(entries => {
 revealEls.forEach(el => observer.observe(el));
 
 /* ══════════════════════════════════════════════════════════════
-   ACTIVE NAV LINK ON SCROLL
+   CUSTOM CURSOR
 ══════════════════════════════════════════════════════════════ */
+(function() {
+  const dot  = document.getElementById('cur-dot');
+  const ring = document.getElementById('cur-ring');
+  const body = document.body;
+
+  let mx = 0, my = 0;       // mouse position
+  let rx = 0, ry = 0;       // ring position (lags)
+  let rafId;
+
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX;
+    my = e.clientY;
+    // Dot snaps instantly
+    dot.style.left = mx + 'px';
+    dot.style.top  = my + 'px';
+  });
+
+  // Ring follows with lerp for smooth trailing
+  function animateRing() {
+    rx += (mx - rx) * 0.14;
+    ry += (my - ry) * 0.14;
+    ring.style.left = rx + 'px';
+    ring.style.top  = ry + 'px';
+    rafId = requestAnimationFrame(animateRing);
+  }
+  animateRing();
+
+  // Click state
+  document.addEventListener('mousedown', () => body.classList.add('clicking'));
+  document.addEventListener('mouseup',   () => body.classList.remove('clicking'));
+
+  // Hover state on interactive elements
+  const hoverTargets = 'a, button, [role="button"], .project-card, .connect-card, .training-card, .sk-chip, .focus-item';
+  document.querySelectorAll(hoverTargets).forEach(el => {
+    el.addEventListener('mouseenter', () => body.classList.add('hovering'));
+    el.addEventListener('mouseleave', () => body.classList.remove('hovering'));
+  });
+
+  // Hide when leaving window
+  document.addEventListener('mouseleave', () => {
+    dot.style.opacity  = '0';
+    ring.style.opacity = '0';
+  });
+  document.addEventListener('mouseenter', () => {
+    dot.style.opacity  = '1';
+    ring.style.opacity = '1';
+  });
+})();
+
+/* ACTIVE NAV LINK ON SCROLL */
 const sections = document.querySelectorAll('section[id]');
 const navLinks = document.querySelectorAll('.nav-links a');
 const scrollSpy = new IntersectionObserver(entries => {
