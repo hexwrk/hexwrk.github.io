@@ -288,7 +288,7 @@ section { margin-bottom: 6.5rem; scroll-margin-top: calc(var(--nav-h) + 2rem); }
   margin-bottom: 2.75rem;
   opacity: 0;
   transform: translateY(8px);
-  transition: opacity .6s ease .1s, transform .6s ease .1s;
+  transition: opacity .3s ease, transform .3s ease;
 }
 .hero-bio.bio-visible {
   opacity: 1;
@@ -307,7 +307,7 @@ section { margin-bottom: 6.5rem; scroll-margin-top: calc(var(--nav-h) + 2rem); }
   margin-bottom: 3rem;
   opacity: 0;
   transform: translateY(8px);
-  transition: opacity .5s ease .2s, transform .5s ease .2s;
+  transition: opacity .25s ease, transform .25s ease;
 }
 .hero-links.links-visible {
   opacity: 1;
@@ -880,8 +880,8 @@ footer {
 /* ── SCROLL REVEAL ─────────────────────────────────────────────────────── */
 .reveal {
   opacity: 0;
-  transform: translateY(18px);
-  transition: opacity .55s ease, transform .55s ease;
+  transform: translateY(12px);
+  transition: opacity .3s ease, transform .3s ease;
 }
 .reveal.visible {
   opacity: 1;
@@ -1263,12 +1263,12 @@ footer {
           // Final string fully typed — stop, keep cursor blinking
           done = true;
           // Reveal bio and links after typing completes
-          setTimeout(() => bio.classList.add('bio-visible'), 150);
-          setTimeout(() => links.classList.add('links-visible'), 350);
+          setTimeout(() => bio.classList.add('bio-visible'), 80);
+          setTimeout(() => links.classList.add('links-visible'), 180);
           return;
         }
         // Pause at end of intermediate phrase then delete
-        setTimeout(() => { deleting = true; tick(); }, 900);
+        setTimeout(() => { deleting = true; tick(); }, 400);
         return;
       }
     } else {
@@ -1280,17 +1280,17 @@ footer {
         deleting = false;
         phaseIdx++;
         // Small pause before typing next phrase
-        setTimeout(tick, 300);
+        setTimeout(tick, 150);
         return;
       }
     }
 
-    const delay = deleting ? randDelay(30, 15) : randDelay(48, 30);
+    const delay = deleting ? randDelay(18, 8) : randDelay(28, 15);
     setTimeout(tick, delay);
   }
 
   // Small boot delay before starting
-  setTimeout(tick, 600);
+  setTimeout(tick, 200);
 })();
 
 /* ══════════════════════════════════════════════════════════════
