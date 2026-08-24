@@ -985,6 +985,17 @@ body.hovering .cursor-dot {
           mask-image: radial-gradient(ellipse at 50% -5%, #000 0%, transparent 65%);
 }
 </style>
+<noscript>
+<style>
+  /* .hero-bio, .hero-links, and .reveal (every section below the hero)
+     stay at opacity:0 until JS adds a *-visible/visible class. Without
+     JS, that never happens and the page is blank past the hero name. */
+  .hero-bio, .hero-links, .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+</style>
+</noscript>
 </head>
 <body>
 <div class="cursor-dot"  id="cur-dot"></div>
