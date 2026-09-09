@@ -547,94 +547,6 @@ section { margin-bottom: 6.5rem; scroll-margin-top: calc(var(--nav-h) + 2rem); }
   transform: translate(3px, -3px);
 }
 
-/* ── WIP ───────────────────────────────────────────────────────────────── */
-.wip-section-label {
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--mut);
-  letter-spacing: .2em;
-  text-transform: uppercase;
-  margin: 2rem 0 .85rem;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.wip-section-label::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: linear-gradient(90deg, var(--bd2), transparent);
-}
-.wip-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
-  gap: 8px;
-}
-.wip-card {
-  background: var(--bg2);
-  border: 1px solid var(--bd);
-  border-radius: 8px;
-  padding: 1.3rem 1.5rem;
-  position: relative;
-  overflow: hidden;
-  transition: border-color .18s;
-}
-.wip-card::after {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, var(--amber), transparent);
-  opacity: .5;
-}
-.wip-card:hover { border-color: rgba(240,169,46,.2); }
-.wip-badge {
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--amber);
-  letter-spacing: .12em;
-  text-transform: uppercase;
-  margin-bottom: .6rem;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.wip-badge::before {
-  content: '';
-  width: 5px; height: 5px;
-  background: var(--amber);
-  border-radius: 50%;
-  flex-shrink: 0;
-  animation: pulse-amber 2s ease-in-out infinite;
-}
-@keyframes pulse-amber {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: .3; }
-}
-.wip-name {
-  font-family: var(--sans);
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--txt);
-  margin-bottom: .45rem;
-}
-.wip-desc {
-  font-size: 14px;
-  color: var(--mut);
-  line-height: 1.7;
-  margin-bottom: .8rem;
-}
-.wip-tags { display: flex; flex-wrap: wrap; gap: 5px; }
-.wip-tag {
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--fnt);
-  border: 1px solid var(--bd);
-  padding: 2px 7px;
-  border-radius: 3px;
-  letter-spacing: .03em;
-}
-
 /* ── SKILLS ────────────────────────────────────────────────────────────── */
 .skills-wrap { position: relative; }
 .skills-block { margin-bottom: 1.9rem; }
@@ -768,6 +680,8 @@ section { margin-bottom: 6.5rem; scroll-margin-top: calc(var(--nav-h) + 2rem); }
   color: var(--accent);
   margin-bottom: .8rem;
   letter-spacing: .04em;
+  text-decoration: none;
+  display: inline-block;
 }
 .exp-points { list-style: none; }
 .exp-points li {
@@ -944,7 +858,7 @@ body.hovering .cursor-dot {
   .topnav { padding: 0 1.25rem; }
   .nav-links { display: none; }
   main { padding: 3rem 1.25rem 6rem; }
-  .wip-grid, .training-grid, .connect-grid { grid-template-columns: 1fr; }
+  .training-grid, .connect-grid { grid-template-columns: 1fr; }
   .exp-item { grid-template-columns: 1fr; gap: .5rem; }
   .focus-grid { grid-template-columns: 1fr 1fr; }
   footer { flex-direction: column; gap: 1rem; align-items: flex-start; }
@@ -966,8 +880,7 @@ body.hovering .cursor-dot {
 
 /* accent bars bloom when they appear */
 .project-card::before        { box-shadow: 0 0 14px rgba(255,45,74,.55); }
-.training-card::before,
-.wip-card::after             { box-shadow: 0 0 10px rgba(255,45,74,.30); }
+.training-card::before       { box-shadow: 0 0 10px rgba(255,45,74,.30); }
 
 /* hotter, double-bloom cursor */
 .cursor-dot { box-shadow: 0 0 10px rgba(255,45,74,.9), 0 0 22px rgba(255,45,74,.45); }
@@ -1022,7 +935,7 @@ body.hovering .cursor-dot {
     <!-- HERO -->
     <section id="hero" style="position:relative;">
 
-      <!-- Subtle ASCII deco top-right — the ╭─╮ box, very dim -->
+      <!-- Subtle ASCII deco top-right — the box, very dim -->
       <div class="ascii-deco ascii-hero">╭─╮
 │✶│
 ╰─╯</div>
@@ -1040,7 +953,7 @@ body.hovering .cursor-dot {
 
       <p class="hero-bio" id="hero-bio">
         BSc IT student specialising in <em>red team operations</em> and <em>security data analytics</em>.
-        Building toward penetration testing and exploit development — focused on
+        Building toward penetration testing and exploit development, focused on
         breaking systems apart to understand how they <em>actually fail</em>.
         Turning raw data into operational intelligence.
       </p>
@@ -1073,35 +986,67 @@ body.hovering .cursor-dot {
             <span class="pc-type">Security Tool</span>
           </div>
           <div class="pc-name">Security Pre-Commit Scanner</div>
-          <div class="pc-desc">Git hook that blocks insecure Python before it reaches a repo. Detects hardcoded secrets, SQL injection, unsafe command execution, and weak cryptography via configurable YAML rules.</div>
+          <div class="pc-desc">Git hook that blocks insecure code before it reaches history. V2 pairs regex pre-filtering with a local Ollama (qwen2.5-coder:14b) triage layer to cut false positives, flagging hardcoded secrets, SQL injection, unsafe command execution, and weak cryptography through multi-language YAML rules.</div>
           <div class="pc-tags">
             <span class="pc-tag">Python</span>
+            <span class="pc-tag">Ollama</span>
             <span class="pc-tag">Git Hooks</span>
-            <span class="pc-tag">Regex</span>
             <span class="pc-tag">YAML</span>
             <span class="pc-tag">DevSecOps</span>
           </div>
           <span class="pc-arrow">↗</span>
         </a>
 
-        <a class="project-card" href="https://github.com/hexwrk/AutoTublify" target="_blank">
+        <a class="project-card" href="https://github.com/hexwrk/ai-review-platform" target="_blank">
           <div class="pc-top">
             <span class="pc-num">02</span>
-            <span class="pc-type">Browser Extension</span>
+            <span class="pc-type">CI/CD Security</span>
           </div>
-          <div class="pc-name">AutoTublify</div>
-          <div class="pc-desc">Autonomous Chrome extension generating on-demand YouTube video summaries without leaving the browser. Chrome Extension API with a non-intrusive UI overlay.</div>
+          <div class="pc-name">ai-review-platform</div>
+          <div class="pc-desc">Multi-stage automated code review that runs on GitLab merge requests. Four LLM agents run in sequence inside a CI pipeline (security reviewer, fix implementer, functionality tester, final verifier), each locked to a narrow tool allow-list, with a human always making the final merge decision.</div>
           <div class="pc-tags">
             <span class="pc-tag">JavaScript</span>
-            <span class="pc-tag">Chrome API</span>
-            <span class="pc-tag">Automation</span>
+            <span class="pc-tag">GitLab CI</span>
+            <span class="pc-tag">LLM Agents</span>
+            <span class="pc-tag">DevSecOps</span>
+          </div>
+          <span class="pc-arrow">↗</span>
+        </a>
+
+        <a class="project-card" href="https://github.com/hexwrk/log-analyzer" target="_blank">
+          <div class="pc-top">
+            <span class="pc-num">03</span>
+            <span class="pc-type">Threat Detection</span>
+          </div>
+          <div class="pc-name">Security Log Analyzer</div>
+          <div class="pc-desc">Automated log parser that surfaces attack patterns and exploitation indicators across 10k+ entries. Pandas offline correlation, ELK Stack ingestion, and Kibana timeline reconstruction for fast triage.</div>
+          <div class="pc-tags">
+            <span class="pc-tag">Python</span>
+            <span class="pc-tag">Pandas</span>
+            <span class="pc-tag">ELK Stack</span>
+            <span class="pc-tag">Kibana</span>
+          </div>
+          <span class="pc-arrow">↗</span>
+        </a>
+
+        <a class="project-card" href="https://github.com/hexwrk/devlog" target="_blank">
+          <div class="pc-top">
+            <span class="pc-num">04</span>
+            <span class="pc-type">Application</span>
+          </div>
+          <div class="pc-name">devlog</div>
+          <div class="pc-desc">Local-first desktop task manager for IT and cybersecurity students. A fast task board with skill progression, completion streaks, and an RPG-style XP system. Tasks stay in a local JSON file: no account, no server, no analytics.</div>
+          <div class="pc-tags">
+            <span class="pc-tag">Python</span>
+            <span class="pc-tag">Desktop App</span>
+            <span class="pc-tag">Local-First</span>
           </div>
           <span class="pc-arrow">↗</span>
         </a>
 
         <a class="project-card" href="https://github.com/hexwrk/guidewise" target="_blank">
           <div class="pc-top">
-            <span class="pc-num">03</span>
+            <span class="pc-num">05</span>
             <span class="pc-type">Web Platform</span>
           </div>
           <div class="pc-name">GuideWise</div>
@@ -1114,43 +1059,21 @@ body.hovering .cursor-dot {
           </div>
           <span class="pc-arrow">↗</span>
         </a>
-      </div>
 
-      <!-- Subtle ASCII divider between completed and WIP -->
-      <div class="ascii-divider">&gt;—[v]—&lt;</div>
-
-      <div class="wip-section-label">In Progress</div>
-      <div class="wip-grid">
-        <div class="wip-card">
-          <div class="wip-badge">WIP · Threat Detection</div>
-          <div class="wip-name">Security Log Analyzer</div>
-          <div class="wip-desc">Automated log parser surfacing attack patterns and exploitation indicators. Pandas offline correlation, ELK Stack ingestion, Kibana timeline reconstruction of 10k+ entries.</div>
-          <div class="wip-tags">
-            <span class="wip-tag">Python</span>
-            <span class="wip-tag">Pandas</span>
-            <span class="wip-tag">ELK Stack</span>
-            <span class="wip-tag">Kibana</span>
+        <a class="project-card" href="https://github.com/hexwrk/AutoTublify" target="_blank">
+          <div class="pc-top">
+            <span class="pc-num">06</span>
+            <span class="pc-type">Browser Extension</span>
           </div>
-        </div>
-        <div class="wip-card">
-          <div class="wip-badge">WIP · ML / Anomaly Detection</div>
-          <div class="wip-name">ML System Monitor</div>
-          <div class="wip-desc">Infra telemetry tool exploring anomaly signatures from an attacker's perspective. What does lateral movement look like in Prometheus metrics?</div>
-          <div class="wip-tags">
-            <span class="wip-tag">Python</span>
-            <span class="wip-tag">scikit-learn</span>
-            <span class="wip-tag">Prometheus</span>
-            <span class="wip-tag">Grafana</span>
+          <div class="pc-name">AutoTublify</div>
+          <div class="pc-desc">Autonomous Chrome extension generating on-demand YouTube video summaries without leaving the browser. Chrome Extension API with a non-intrusive UI overlay.</div>
+          <div class="pc-tags">
+            <span class="pc-tag">JavaScript</span>
+            <span class="pc-tag">Chrome API</span>
+            <span class="pc-tag">Automation</span>
           </div>
-        </div>
-        <div class="wip-card">
-          <div class="wip-badge">WIP · Application</div>
-          <div class="wip-name">Verentro App</div>
-          <div class="wip-desc">Application in active development. Details to be published on release.</div>
-          <div class="wip-tags">
-            <span class="wip-tag">TBA</span>
-          </div>
-        </div>
+          <span class="pc-arrow">↗</span>
+        </a>
       </div>
     </section>
 
@@ -1200,9 +1123,9 @@ body.hovering .cursor-dot {
           <div class="sk-chips">
             <span class="sk-chip">Linux (Ubuntu/Debian)</span>
             <span class="sk-chip">Git / GitHub</span>
+            <span class="sk-chip">GitLab CI/CD</span>
             <span class="sk-chip">Docker</span>
-            <span class="sk-chip">Prometheus</span>
-            <span class="sk-chip">Grafana</span>
+            <span class="sk-chip">Power Automate</span>
             <span class="sk-chip">zsh / Bash scripting</span>
           </div>
         </div>
@@ -1216,7 +1139,7 @@ body.hovering .cursor-dot {
       <div class="training-grid">
         <a class="training-card" href="https://tryhackme.com/p/Furios" target="_blank">
           <div class="tc-platform">TryHackMe</div>
-          <div class="tc-name">Active — Offensive Pentesting</div>
+          <div class="tc-name">Active · Offensive Pentesting</div>
           <div class="tc-handle">Handle: Furios →</div>
         </a>
         <a class="training-card" href="https://app.hackthebox.com" target="_blank">
@@ -1227,7 +1150,7 @@ body.hovering .cursor-dot {
       </div>
 
       <div class="training-self">
-        <strong>Self-Directed — 2024 to present</strong><br>
+        <strong>Self-Directed · 2024 to present</strong><br>
         Exploit dev, adversarial ML, red team tradecraft, data engineering pipelines, and machine learning curriculum. Independent labs alongside formal coursework.
       </div>
     </section>
@@ -1240,7 +1163,7 @@ body.hovering .cursor-dot {
         <div class="exp-date">Apr 2024<br>Jan 2025</div>
         <div>
           <div class="exp-role">Sales Consultant</div>
-          <div class="exp-org">Vape Vendors — Pretoria</div>
+          <div class="exp-org">Vape Vendors, Pretoria</div>
           <ul class="exp-points">
             <li>Managed POS system processing 100+ daily transactions at 99% accuracy</li>
             <li>Maintained inventory database across 500+ SKUs with 95%+ accuracy</li>
@@ -1253,9 +1176,9 @@ body.hovering .cursor-dot {
         <div class="exp-date">2024<br>Present</div>
         <div>
           <div class="exp-role">BSc IT Student</div>
-          <a href="https://www.richfield.ac.za/" target="_blank">Richfield GIT — Centurion</a>
+          <a class="exp-org" href="https://www.richfield.ac.za/" target="_blank">Richfield GIT, Centurion</a>
           <ul class="exp-points">
-            <li>Specialising in Cybersecurity and Data Analytics — Year 3, 2026</li>
+            <li>Specialising in Cybersecurity and Data Analytics, Year 3, 2026</li>
             <li>Modules: AI 700, Cyber Security 700, Machine Learning 700, HCI 700, Java OOP</li>
             <li>Building practical skills parallel to curriculum through independent project work</li>
           </ul>
@@ -1268,7 +1191,7 @@ body.hovering .cursor-dot {
       <div class="section-label">05 · Connect</div>
       <p class="connect-intro">
         Open to WIL placements, part-time and full-time IT internships in cybersecurity and data analytics.
-        Based in Pretoria — available for remote and on-site roles.
+        Based in Pretoria, available for remote and on-site roles.
       </p>
       <div class="ascii-connect-deco">[ sys.status: open_to_work ] [ loc: pretoria.za ] [ mode: remote/onsite ]</div>
       <div class="connect-grid">
