@@ -802,7 +802,9 @@ footer a:hover{color:var(--acid)}
     // group lets us offset the whole core away from the headline
     const core=new THREE.Group();
     scene.add(core);
-    const geo=new THREE.IcosahedronGeometry(2.1,24);
+    // detail 12 (was 24): quarters the vertex count and the per-frame simplex-noise
+    // load with no visible change at wireframe, so a weak GPU keeps clear headroom
+    const geo=new THREE.IcosahedronGeometry(2.1,12);
     const mesh=new THREE.Mesh(geo,mat);
     core.add(mesh);
 
@@ -830,9 +832,17 @@ footer a:hover{color:var(--acid)}
     window.addEventListener('resize',layout);
 
     const clock=new THREE.Clock();
-    let running=true;
-    document.addEventListener('visibilitychange',()=>{ running=!document.hidden; if(running) loop(); });
+    // frameId guards against stacking loops: a tab background/foreground cycle must never
+    // leave two concurrent requestAnimationFrame chains driving the GPU
+    let running=true, frameId=null;
+    document.addEventListener('visibilitychange',()=>{
+      running=!document.hidden;
+      // only (re)start when no frame is already queued, so a browser-resumed frame
+      // and a manual restart can't both run
+      if(running && frameId===null) loop();
+    });
     function loop(){
+      frameId=null;                 // cleared at entry; re-armed only at the end
       if(!running) return;
       const t=clock.getElapsedTime();
       uniforms.uTime.value=t;
@@ -854,7 +864,7 @@ footer a:hover{color:var(--acid)}
 
       camera.position.x=cmx*0.8; camera.position.y=-cmy*0.8; camera.lookAt(0,0,0);
       renderer.render(scene,camera);
-      requestAnimationFrame(loop);
+      frameId=requestAnimationFrame(loop);   // single source of the next frame
     }
     loop();
   })();
