@@ -68,18 +68,27 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
   background:radial-gradient(circle,rgba(255,45,74,.12),transparent 60%);
   filter:blur(20px);will-change:transform;
 }
+/* FIX: no mix-blend-mode here. A full-screen blend layer stacked on top of the
+   WebGL canvas and the difference-mode cursor forces the compositor to re-blend
+   the whole viewport every frame. Plain low opacity gives nearly the same look. */
 .scanlines{
-  position:fixed;inset:0;z-index:60;pointer-events:none;mix-blend-mode:overlay;opacity:.35;
+  position:fixed;inset:0;z-index:60;pointer-events:none;opacity:.35;
   background:repeating-linear-gradient(0deg,rgba(255,255,255,.035) 0 1px,transparent 1px 3px);
 }
+/* FIX: grain was a 200%-viewport layer (inset:-50%) moving forever. That is a
+   ~4x-viewport surface being recomposited non-stop. Now it's viewport-sized and
+   static: the noise tile is rasterised once and cached. */
 .grain{
-  position:fixed;inset:-50%;z-index:61;pointer-events:none;opacity:.05;
+  position:fixed;inset:0;z-index:61;pointer-events:none;opacity:.05;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  animation:grain 1.1s steps(3) infinite;
 }
-@keyframes grain{
-  0%{transform:translate(0,0)}33%{transform:translate(-5%,3%)}66%{transform:translate(4%,-4%)}100%{transform:translate(0,0)}
-}
+/* low-power mode: set by the frame-time watchdog in JS (or forced with ?lite in
+   the URL). Strips the expensive layers so a weak GPU stays responsive. */
+html.low-power .grain,
+html.low-power .scanlines{display:none}
+html.low-power #webgl{display:none}
+html.low-power header.nav.scrolled{backdrop-filter:none;background:rgba(10,6,8,.96)}
+html.low-power .bg-glow{filter:none}
 
 /* ---------- custom cursor ---------- */
 .cursor-dot,.cursor-ring{position:fixed;top:0;left:0;z-index:200;pointer-events:none;border-radius:50%;mix-blend-mode:difference;will-change:transform}
@@ -573,6 +582,23 @@ footer a:hover{color:var(--acid)}
   const reduce = window.matchMedia('(prefers-reduced-motion:reduce)').matches;
   const isTouch = window.matchMedia('(hover:none),(pointer:coarse)').matches;
 
+  /* ---------------- low-power mode ----------------
+     ?lite in the URL forces it, which gives you an instant A/B test: if
+     hexwrk.github.io/?lite is smooth and the normal URL freezes, the cause
+     is the visual layers, not the page logic. */
+  const root=document.documentElement;
+  let lowPower=new URLSearchParams(location.search).has('lite');
+  if(lowPower) root.classList.add('low-power');
+  // other modules register a stop callback here so the watchdog can shut them down
+  const onLowPower=[];
+  function enterLowPower(reason){
+    if(root.classList.contains('low-power')) return;
+    lowPower=true;
+    root.classList.add('low-power');
+    onLowPower.forEach(fn=>{ try{ fn(); }catch(e){} });
+    console.warn('[hexwrk] low-power mode on:', reason);
+  }
+
   /* ---------------- preloader boot sequence ---------------- */
   const bootLog=document.getElementById('bootLog'),bootBar=document.getElementById('bootBar'),
         bootPct=document.getElementById('bootPct'),boot=document.getElementById('boot');
@@ -707,7 +733,16 @@ footer a:hover{color:var(--acid)}
     const dot=document.getElementById('cDot'), ring=document.getElementById('cRing');
     let mx=innerWidth/2,my=innerHeight/2, rx=mx,ry=my;
     window.addEventListener('mousemove',e=>{ mx=e.clientX; my=e.clientY; dot.style.transform=`translate(${mx}px,${my}px)`; });
-    (function ring_raf(){ rx+=(mx-rx)*0.18; ry+=(my-ry)*0.18; ring.style.transform=`translate(${rx}px,${ry}px)`; requestAnimationFrame(ring_raf); })();
+    // FIX: this loop used to run forever, writing a style every frame even when the
+    // mouse was still. Now it stops once the ring has caught up and the
+    // mousemove handler restarts it.
+    let ringFrame=null;
+    function ring_raf(){
+      rx+=(mx-rx)*0.18; ry+=(my-ry)*0.18;
+      ring.style.transform=`translate(${rx}px,${ry}px)`;
+      ringFrame = (Math.abs(mx-rx)>0.2 || Math.abs(my-ry)>0.2) ? requestAnimationFrame(ring_raf) : null;
+    }
+    window.addEventListener('mousemove',()=>{ if(ringFrame===null) ringFrame=requestAnimationFrame(ring_raf); },{passive:true});
     document.querySelectorAll('a,button,.tilt').forEach(el=>{
       el.addEventListener('mouseenter',()=>ring.classList.add('hover'));
       el.addEventListener('mouseleave',()=>ring.classList.remove('hover'));
@@ -735,7 +770,7 @@ footer a:hover{color:var(--acid)}
 
   /* ---------------- WebGL hero: displaced icosahedron ---------------- */
   (function webgl(){
-    if(reduce || typeof THREE==='undefined') return;
+    if(reduce || lowPower || typeof THREE==='undefined') return;
     const canvas=document.getElementById('webgl');
     let renderer;
     try{ renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true}); }
@@ -834,16 +869,44 @@ footer a:hover{color:var(--acid)}
     const clock=new THREE.Clock();
     // frameId guards against stacking loops: a tab background/foreground cycle must never
     // leave two concurrent requestAnimationFrame chains driving the GPU
-    let running=true, frameId=null;
+    let running=true, frameId=null, killed=false;
     document.addEventListener('visibilitychange',()=>{
       running=!document.hidden;
-      // only (re)start when no frame is already queued, so a browser-resumed frame
-      // and a manual restart can't both run
-      if(running && frameId===null) loop();
+      // reset the watchdog clock so a long hidden gap isn't counted as one slow frame
+      lastFrame=performance.now(); slowStreak=0;
+      if(running && frameId===null && !killed) loop();
     });
+
+    // watchdog hands us a kill switch: stop the loop and free the GPU context
+    onLowPower.push(()=>{
+      killed=true; running=false;
+      if(frameId!==null) cancelAnimationFrame(frameId);
+      frameId=null;
+      geo.dispose(); pGeo.dispose(); mat.dispose(); pMat.dispose();
+      renderer.dispose();
+    });
+
+    /* FIX: frame-time watchdog. If frames are consistently slow (>40ms, i.e.
+       under ~25fps) for 45 frames in a row, the GPU can't keep up with this
+       page on this machine, so drop to low-power mode instead of freezing. */
+    let lastFrame=performance.now(), slowStreak=0;
+    const SLOW_MS=40, SLOW_LIMIT=45;
+
     function loop(){
       frameId=null;                 // cleared at entry; re-armed only at the end
-      if(!running) return;
+      if(!running || killed) return;
+
+      const now=performance.now(), dt=now-lastFrame; lastFrame=now;
+      // ignore huge gaps (debugger pause, tab throttling): those aren't render cost
+      if(dt>SLOW_MS && dt<1000){ if(++slowStreak>=SLOW_LIMIT){ enterLowPower('avg frame >'+SLOW_MS+'ms'); return; } }
+      else slowStreak=0;
+
+      // FIX: past ~1.5 screens of scroll the core is nearly invisible, so skip the
+      // render (the expensive part) and just keep polling cheaply until the user
+      // scrolls back up
+      const st0=window.scrollY||document.documentElement.scrollTop;
+      if(st0>innerHeight*1.5){ frameId=requestAnimationFrame(loop); return; }
+
       const t=clock.getElapsedTime();
       uniforms.uTime.value=t;
       cmx+=(tmx-cmx)*0.05; cmy+=(tmy-cmy)*0.05;
